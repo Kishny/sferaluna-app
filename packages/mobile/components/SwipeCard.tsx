@@ -118,8 +118,12 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_evt, gesture) => Math.abs(gesture.dx) > 4 || Math.abs(gesture.dy) > 4,
+      // Ne revendiquer le responder qu'à partir d'un mouvement horizontal
+      // réel (≥ 8 px). Retourner `true` dès `onStart` interceptait les taps
+      // sur la tab bar quand la carte débordait visuellement dans cette zone.
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_evt, gesture) =>
+        Math.abs(gesture.dx) > 8 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
       onPanResponderRelease: (_evt, gesture) => {
         if (gesture.dx > SWIPE_THRESHOLD) {
@@ -136,11 +140,12 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(({
         }
       },
       onPanResponderTerminate: () => {
+        // friction/tension (API Animated core) — PAS damping/stiffness (reanimated)
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
           useNativeDriver: true,
-          damping: 16,
-          stiffness: 180,
+          friction: 6,
+          tension: 80,
         }).start();
       },
     }),

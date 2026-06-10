@@ -107,15 +107,20 @@ export default function ProfileScreen() {
     queryFn: fetchMyProfile,
   });
 
-  // Les écrans d'onglets restent montés en arrière-plan dans Expo Router : sans
-  // ce refetch au focus, l"abonnement (plan/isPremium) affiché peut rester figé
-  // sur l'état observé lors du tout premier chargement (ex. avant un paiement
-  // Stripe réussi). On revérifie donc systématiquement auprès de MongoDB via
-  // l'API à chaque fois que cet onglet redevient actif.
+  // Rafraîchit uniquement si les données ont plus de 60 s (ou sont absentes).
+  // L'ancienne version appelait refetch() inconditionnellement à chaque focus,
+  // déclenchant un appel réseau systématique qui saturait le thread JS et
+  // rendait la navigation entre onglets lente. Le staleTime global (60 s) du
+  // QueryClient gère déjà ce cas — on garde le useFocusEffect uniquement pour
+  // forcer un rafraîchissement après un paiement Stripe (où les données sont
+  // effectivement périmées car le webhook a mis à jour isPremium côté serveur).
   useFocusEffect(
     useCallback(() => {
-      refetch();
-    }, [refetch])
+      if (!data) { refetch(); return; }
+      // dataUpdatedAt est fourni par TanStack Query via le queryClient
+      const age = queryClient.getQueryState(['profile', 'me'])?.dataUpdatedAt ?? 0;
+      if (Date.now() - age > 60_000) refetch();
+    }, [data, refetch, queryClient])
   );
 
   const user = data?.user;
