@@ -6,6 +6,7 @@ import { ChatCircleDots, Sparkle, X } from 'phosphor-react-native';
 import { LinearGradient } from './LinearGradient';
 import { GradientButton } from './GradientButton';
 import { Colors, Spacing, Radius } from '../lib/theme';
+import { NP } from '../components/NP';
 
 const FALLBACK_IMAGE = 'https://i.pravatar.cc/400';
 
@@ -34,7 +35,7 @@ export function MatchModal({
           style={styles.card}
         >
           <TouchableOpacity style={styles.closeBtn} onPress={onContinue} hitSlop={8}>
-            <X size={18} color="rgba(255,255,255,0.6)" />
+            <NP><X size={18} color="rgba(255,255,255,0.6)" /></NP>
           </TouchableOpacity>
 
           <View style={styles.sparkleRow}>
@@ -69,8 +70,8 @@ export function MatchModal({
             style={styles.sendBtn}
           />
           <TouchableOpacity onPress={onContinue} activeOpacity={0.7} style={styles.continueBtn}>
-            <ChatCircleDots size={16} color={Colors.textSecondary} />
-            <Text style={styles.continueText}>Continuer à explorer</Text>
+            <NP><ChatCircleDots size={16} color={Colors.textSecondary} />
+            </NP><Text style={styles.continueText}>Continuer à explorer</Text>
           </TouchableOpacity>
         </LinearGradient>
       </View>

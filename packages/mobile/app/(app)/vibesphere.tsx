@@ -15,6 +15,7 @@ import {
   VIBE_MOODS, type VibePost, type VibeMood,
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
+import { NP } from '../../components/NP';
 
 const FALLBACK = 'https://i.pravatar.cc/200';
 
@@ -89,12 +90,12 @@ function VibeCard({ post }: { post: VibePost }) {
       <View style={styles.postFooter}>
         <Pressy onPress={() => likeMutation.mutate()}>
           <View style={styles.likeRow}>
-            <Heart
+            <NP><Heart
               size={18}
               color={post.likedByMe ? Colors.accentPink : Colors.textMuted}
               weight={post.likedByMe ? 'fill' : 'regular'}
             />
-            <Text style={[styles.likeCount, post.likedByMe && { color: Colors.accentPink }]}>
+            </NP><Text style={[styles.likeCount, post.likedByMe && { color: Colors.accentPink }]}>
               {post.likesCount}
             </Text>
           </View>
@@ -134,7 +135,7 @@ function CreateVibeModal({ visible, onClose }: { visible: boolean; onClose: () =
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Partager une vibe</Text>
               <TouchableOpacity onPress={onClose} hitSlop={8}>
-                <X size={22} color={Colors.textMuted} />
+                <NP><X size={22} color={Colors.textMuted} /></NP>
               </TouchableOpacity>
             </View>
 
@@ -187,8 +188,8 @@ function CreateVibeModal({ visible, onClose }: { visible: boolean; onClose: () =
               disabled={!canSubmit}
               activeOpacity={0.85}
             >
-              <PaperPlaneTilt size={17} color="#fff" weight="fill" />
-              <Text style={styles.submitBtnText}>
+              <NP><PaperPlaneTilt size={17} color="#fff" weight="fill" />
+              </NP><Text style={styles.submitBtnText}>
                 {createMutation.isPending ? 'Publication…' : 'Publier ma vibe'}
               </Text>
             </TouchableOpacity>
@@ -220,8 +221,8 @@ export default function VibesphereScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>VibeSphere</Text>
             <Text style={styles.subtitle}>L'espace pour partager vos humeurs du moment</Text>

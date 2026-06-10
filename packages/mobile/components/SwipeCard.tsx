@@ -6,6 +6,7 @@ import { Heart, X, MapPin } from 'phosphor-react-native';
 import { LinearGradient } from './LinearGradient';
 import { Colors, Spacing, Radius } from '../lib/theme';
 import type { PublicProfile } from '../lib/api';
+import { NP } from './NP';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
@@ -179,12 +180,12 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(({
       <CardContent profile={profile} />
 
       <Animated.View style={[styles.stamp, styles.likeStamp, { opacity: likeOpacity }]} pointerEvents="none">
-        <Heart size={26} color="#10B981" weight="fill" />
-        <Text style={[styles.stampText, { color: '#10B981' }]}>J'aime</Text>
+        <NP><Heart size={26} color="#10B981" weight="fill" />
+        </NP><Text style={[styles.stampText, { color: '#10B981' }]}>J'aime</Text>
       </Animated.View>
       <Animated.View style={[styles.stamp, styles.passStamp, { opacity: passOpacity }]} pointerEvents="none">
-        <X size={26} color="#EF4444" weight="bold" />
-        <Text style={[styles.stampText, { color: '#EF4444' }]}>Je passe</Text>
+        <NP><X size={26} color="#EF4444" weight="bold" />
+        </NP><Text style={[styles.stampText, { color: '#EF4444' }]}>Je passe</Text>
       </Animated.View>
     </Animated.View>
   );

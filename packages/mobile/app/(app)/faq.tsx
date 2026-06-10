@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, CaretDown, CaretUp, MoonStars } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../lib/theme';
+import { NP } from '../../components/NP';
 
 interface FaqItem { q: string; a: string }
 interface FaqSection { title: string; emoji: string; items: FaqItem[] }
@@ -125,8 +126,8 @@ export default function FaqScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Questions fréquentes</Text>
             <Text style={styles.subtitle}>Toutes les réponses à vos questions</Text>

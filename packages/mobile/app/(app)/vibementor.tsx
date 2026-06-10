@@ -18,6 +18,7 @@ import {
   MENTOR_CATEGORIES, type MentorPost, type MentorCategory,
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
+import { NP } from '../../components/NP';
 
 const FALLBACK = 'https://i.pravatar.cc/200';
 
@@ -63,8 +64,8 @@ function MentorCard({
         </View>
         {post.isSolved && (
           <View style={styles.solvedBadge}>
-            <CheckCircle size={13} color={Colors.success} weight="fill" />
-            <Text style={styles.solvedText}>Résolu</Text>
+            <NP><CheckCircle size={13} color={Colors.success} weight="fill" />
+            </NP><Text style={styles.solvedText}>Résolu</Text>
           </View>
         )}
         <View style={[styles.catBadge, { backgroundColor: `${catColor}22`, borderColor: `${catColor}55` }]}>
@@ -80,12 +81,12 @@ function MentorCard({
       {/* Actions */}
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionBtn} onPress={() => likeMutation.mutate()} activeOpacity={0.8}>
-          <Heart
+          <NP><Heart
             size={16}
             color={post.likedByMe ? Colors.accentPink : Colors.textMuted}
             weight={post.likedByMe ? 'fill' : 'regular'}
           />
-          <Text style={[styles.actionCount, post.likedByMe && { color: Colors.accentPink }]}>
+          </NP><Text style={[styles.actionCount, post.likedByMe && { color: Colors.accentPink }]}>
             {post.likesCount}
           </Text>
         </TouchableOpacity>
@@ -106,8 +107,8 @@ function MentorCard({
                 <Text style={styles.answerContent}>{ans.content}</Text>
               </View>
               {ans.isAccepted && (
-                <CheckCircle size={14} color={Colors.success} weight="fill" />
-              )}
+                <NP><CheckCircle size={14} color={Colors.success} weight="fill" />
+              </NP>)}
             </View>
           ))}
           {post.answers.length > 2 && (
@@ -149,7 +150,7 @@ function AnswerModal({
           <LinearGradient colors={[Colors.bgMid, Colors.bgDeep]} style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Répondre</Text>
-              <TouchableOpacity onPress={onClose} hitSlop={8}><X size={22} color={Colors.textMuted} /></TouchableOpacity>
+              <TouchableOpacity onPress={onClose} hitSlop={8}><NP><X size={22} color={Colors.textMuted} /></NP></TouchableOpacity>
             </View>
             <View style={styles.questionPreview}>
               <Text style={styles.questionPreviewText} numberOfLines={3}>{post.question}</Text>
@@ -176,8 +177,8 @@ function AnswerModal({
               disabled={!canSubmit}
               activeOpacity={0.85}
             >
-              <PaperPlaneTilt size={17} color="#fff" weight="fill" />
-              <Text style={styles.submitBtnText}>{answerMutation.isPending ? 'Envoi…' : 'Envoyer ma réponse'}</Text>
+              <NP><PaperPlaneTilt size={17} color="#fff" weight="fill" />
+              </NP><Text style={styles.submitBtnText}>{answerMutation.isPending ? 'Envoi…' : 'Envoyer ma réponse'}</Text>
             </TouchableOpacity>
           </LinearGradient>
         </View>
@@ -210,7 +211,7 @@ function AskModal({ visible, onClose }: { visible: boolean; onClose: () => void 
           <LinearGradient colors={[Colors.bgMid, Colors.bgDeep]} style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Poser une question</Text>
-              <TouchableOpacity onPress={onClose} hitSlop={8}><X size={22} color={Colors.textMuted} /></TouchableOpacity>
+              <TouchableOpacity onPress={onClose} hitSlop={8}><NP><X size={22} color={Colors.textMuted} /></NP></TouchableOpacity>
             </View>
             <Text style={styles.modalLabel}>Catégorie</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
@@ -256,8 +257,8 @@ function AskModal({ visible, onClose }: { visible: boolean; onClose: () => void 
               disabled={!canSubmit}
               activeOpacity={0.85}
             >
-              <PaperPlaneTilt size={17} color="#fff" weight="fill" />
-              <Text style={styles.submitBtnText}>{askMutation.isPending ? 'Publication…' : 'Poser ma question'}</Text>
+              <NP><PaperPlaneTilt size={17} color="#fff" weight="fill" />
+              </NP><Text style={styles.submitBtnText}>{askMutation.isPending ? 'Publication…' : 'Poser ma question'}</Text>
             </TouchableOpacity>
           </LinearGradient>
         </View>
@@ -283,8 +284,8 @@ export default function VibeMentorScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>VibeMentor</Text>
             <Text style={styles.subtitle}>Posez vos questions, partagez vos expériences</Text>

@@ -13,6 +13,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { CheckCircle, XCircle } from 'phosphor-react-native';
 import { Colors, Radius, Spacing } from '../lib/theme';
+import { NP } from './NP';
 
 export type ToastTone = 'success' | 'error';
 
@@ -82,8 +83,8 @@ export function Toast({ toast, onHide, duration = 2600 }: ToastProps) {
     >
       <View style={[styles.toast, isSuccess ? styles.toastSuccess : styles.toastError]}>
         {isSuccess ? (
-          <CheckCircle size={20} color={Colors.success} weight="fill" />
-        ) : (
+          <NP><CheckCircle size={20} color={Colors.success} weight="fill" />
+        </NP>) : (
           <XCircle size={20} color={Colors.error} weight="fill" />
         )}
         <Text style={styles.message} numberOfLines={2}>

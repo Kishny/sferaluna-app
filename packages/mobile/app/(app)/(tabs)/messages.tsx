@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMatches, type MatchSummary } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
+import { NP } from '../../../components/NP';
 
 const FALLBACK_AVATAR = 'https://i.pravatar.cc/200';
 
@@ -167,8 +168,8 @@ export default function MessagesScreen() {
           </Text>
 
           <View style={styles.searchRow}>
-            <MagnifyingGlass size={18} color={Colors.textMuted} style={styles.searchIcon} />
-            <TextInput
+            <NP><MagnifyingGlass size={18} color={Colors.textMuted} style={styles.searchIcon} />
+            </NP><TextInput
               style={styles.searchInput}
               placeholder="Rechercher une conversation…"
               placeholderTextColor={Colors.textMuted}
@@ -178,8 +179,8 @@ export default function MessagesScreen() {
             />
             {searchActive && (
               <TouchableOpacity onPress={() => setSearch('')} hitSlop={8} style={styles.clearSearchBtn}>
-                <X size={14} color={Colors.textMuted} />
-              </TouchableOpacity>
+                <NP><X size={14} color={Colors.textMuted} />
+              </NP></TouchableOpacity>
             )}
           </View>
         </View>
@@ -215,8 +216,8 @@ export default function MessagesScreen() {
         {/* Conversations */}
         {(!searchActive ? sortedConversations.length > 0 || hasAnyConversation : true) && (
           <View style={styles.sectionHeaderRow2}>
-            <ChatCircleDots size={14} color={Colors.textSecondary} weight="fill" />
-            <Text style={styles.sectionTitle}>{searchActive ? 'Résultats' : 'Conversations'}</Text>
+            <NP><ChatCircleDots size={14} color={Colors.textSecondary} weight="fill" />
+            </NP><Text style={styles.sectionTitle}>{searchActive ? 'Résultats' : 'Conversations'}</Text>
           </View>
         )}
 
@@ -279,8 +280,8 @@ export default function MessagesScreen() {
                       </Text>
                     </View>
                   </View>
-                  <CaretRight size={16} color={Colors.textMuted} />
-                </View>
+                  <NP><CaretRight size={16} color={Colors.textMuted} />
+                </NP></View>
               </Pressy>
             );
           }}

@@ -20,6 +20,7 @@ import { FilterModal } from '../../../components/FilterModal';
 import { MatchModal } from '../../../components/MatchModal';
 import { SwipeCard, CardPreview, type SwipeCardHandle } from '../../../components/SwipeCard';
 import { hapticMedium, hapticLight, hapticSuccess, hapticSwipeRelease } from '../../../lib/haptics';
+import { NP } from '../../../components/NP';
 
 const EMPTY_FILTERS: DiscoverFilters = {};
 
@@ -275,8 +276,8 @@ export default function DiscoverScreen() {
             </Text>
           </View>
           <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
-            <SlidersHorizontal size={22} color={Colors.textSecondary} />
-            {activeFilterCount > 0 && (
+            <NP><SlidersHorizontal size={22} color={Colors.textSecondary} />
+            </NP>{activeFilterCount > 0 && (
               <View style={styles.filterBadge}>
                 <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
               </View>
@@ -309,16 +310,16 @@ export default function DiscoverScreen() {
         {/* Actions */}
         <View style={styles.actions}>
           <ActionButton style={[styles.actionBtn, styles.passBtn]} onPress={handlePassPress}>
-            <X size={28} color="#EF4444" weight="bold" />
-          </ActionButton>
+            <NP><X size={28} color="#EF4444" weight="bold" />
+          </NP></ActionButton>
 
           <ActionButton style={[styles.actionBtn, styles.superBtn]} onPress={handleSuperLikePress}>
-            <Star size={24} color="#F59E0B" weight="fill" />
-          </ActionButton>
+            <NP><Star size={24} color="#F59E0B" weight="fill" />
+          </NP></ActionButton>
 
           <ActionButton style={[styles.actionBtn, styles.likeBtn]} onPress={handleLikePress}>
-            <Heart size={28} color={Colors.accentPink} weight="fill" />
-          </ActionButton>
+            <NP><Heart size={28} color={Colors.accentPink} weight="fill" />
+          </NP></ActionButton>
         </View>
 
         {/* Progress */}

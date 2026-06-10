@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, MoonStars, Heart, ShieldCheck, EnvelopeSimple } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../lib/theme';
+import { NP } from '../../components/NP';
 
 const TEAM = [
   {
@@ -68,8 +69,8 @@ export default function EquipeScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Notre équipe</Text>
             <Text style={styles.subtitle}>Les visages derrière SferaLuna</Text>
@@ -131,8 +132,8 @@ export default function EquipeScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <Heart size={20} color={Colors.accentPink} weight="duotone" />
-              <Text style={styles.statLabel}>Communauté bienveillante</Text>
+              <NP><Heart size={20} color={Colors.accentPink} weight="duotone" />
+              </NP><Text style={styles.statLabel}>Communauté bienveillante</Text>
             </View>
           </LinearGradient>
 
@@ -144,8 +145,8 @@ export default function EquipeScreen() {
               onPress={() => router.push('/(app)/contact' as any)}
               activeOpacity={0.85}
             >
-              <EnvelopeSimple size={15} color={Colors.accentPink} weight="duotone" />
-              <Text style={styles.contactBtnText}>Nous contacter</Text>
+              <NP><EnvelopeSimple size={15} color={Colors.accentPink} weight="duotone" />
+              </NP><Text style={styles.contactBtnText}>Nous contacter</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

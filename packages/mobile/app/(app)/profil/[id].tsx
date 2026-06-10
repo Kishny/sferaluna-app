@@ -19,6 +19,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchPublicProfile, likeProfile, fetchMatches, recordProfileVisit } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
+import { NP } from '../../../components/NP';
 
 const AVATAR_SIZE = 100;
 
@@ -88,8 +89,8 @@ export default function PublicProfileScreen() {
       <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
         <SafeAreaView style={styles.safe} edges={['top']}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={styles.loadState}>
             <Text style={styles.errorText}>
               {error instanceof ApiError ? error.message : "Profil introuvable"}
@@ -119,11 +120,11 @@ export default function PublicProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <TouchableOpacity style={styles.reportBtn} onPress={handleReport} hitSlop={8} disabled={reported}>
-            <Flag size={18} color={reported ? Colors.textMuted : Colors.accentPink} weight={reported ? 'regular' : 'duotone'} />
-          </TouchableOpacity>
+            <NP><Flag size={18} color={reported ? Colors.textMuted : Colors.accentPink} weight={reported ? 'regular' : 'duotone'} />
+          </NP></TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -199,8 +200,8 @@ export default function PublicProfileScreen() {
                   colors={likeMutation.isSuccess ? ['#16a34a', '#15803d'] : [Colors.accentPurple, Colors.accentPink]}
                   style={styles.actionBtnGradient}
                 >
-                  <Heart size={17} color="#fff" weight="fill" />
-                  <Text style={styles.actionBtnText}>
+                  <NP><Heart size={17} color="#fff" weight="fill" />
+                  </NP><Text style={styles.actionBtnText}>
                     {likeMutation.isSuccess ? "Like envoyé !" : likeMutation.isPending ? "…" : "Liker ce profil"}
                   </Text>
                 </LinearGradient>
@@ -252,8 +253,8 @@ export default function PublicProfileScreen() {
           {tags.length > 0 && (
             <View style={styles.card}>
               <View style={styles.cardTitleRow}>
-                <Heart size={14} color={Colors.accentPink} weight="duotone" />
-                <Text style={styles.cardTitle}>Centres d'intérêt</Text>
+                <NP><Heart size={14} color={Colors.accentPink} weight="duotone" />
+                </NP><Text style={styles.cardTitle}>Centres d'intérêt</Text>
               </View>
               <View style={styles.tagRow}>
                 {tags.map((t) => (
@@ -267,8 +268,8 @@ export default function PublicProfileScreen() {
 
           {reported && (
             <View style={styles.reportedNote}>
-              <Flag size={13} color={Colors.textMuted} />
-              <Text style={styles.reportedNoteText}>Signalement envoyé. Merci de contribuer à la sécurité de la communauté.</Text>
+              <NP><Flag size={13} color={Colors.textMuted} />
+              </NP><Text style={styles.reportedNoteText}>Signalement envoyé. Merci de contribuer à la sécurité de la communauté.</Text>
             </View>
           )}
         </ScrollView>

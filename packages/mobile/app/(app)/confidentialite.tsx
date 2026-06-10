@@ -21,6 +21,7 @@ import { CaretLeft, ShieldCheck } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing, Radius } from '../../lib/theme';
+import { NP } from '../../components/NP';
 
 interface PolicySection {
   title: string;
@@ -89,8 +90,8 @@ export default function PrivacyPolicyScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={10}>
-            <CaretLeft size={20} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><CaretLeft size={20} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <Text style={styles.headerTitle}>Politique de confidentialité</Text>
           <View style={styles.backBtn} />
         </View>

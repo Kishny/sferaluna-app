@@ -37,6 +37,7 @@ import {
   setBiometricUnlockEnabled,
   authenticateWithBiometrics,
 } from '../../lib/biometrics';
+import { NP } from '../../components/NP';
 
 /** Libellé FR de la méthode de connexion — alignée sur AuthProvider (lib/auth.ts). */
 function getProviderLabel(provider?: AuthProvider): string {
@@ -187,8 +188,8 @@ export default function AccountSecurityScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={10}>
-            <CaretLeft size={20} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><CaretLeft size={20} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <Text style={styles.headerTitle}>Sécurité du compte</Text>
           <View style={styles.backBtn} />
         </View>
@@ -237,8 +238,8 @@ export default function AccountSecurityScreen() {
                     </Text>
                   </View>
                 </View>
-                <CaretRight size={18} color={Colors.textMuted} />
-              </TouchableOpacity>
+                <NP><CaretRight size={18} color={Colors.textMuted} />
+              </NP></TouchableOpacity>
             </GlassCard>
           ) : null}
 
@@ -329,8 +330,8 @@ export default function AccountSecurityScreen() {
                 disabled={verifyBusy}
                 onPress={handleStartIdentityVerification}
               >
-                <IdentificationBadge size={18} color="#fff" weight="bold" />
-                <Text style={styles.ctaButtonText}>
+                <NP><IdentificationBadge size={18} color="#fff" weight="bold" />
+                </NP><Text style={styles.ctaButtonText}>
                   {verifyBusy ? 'Ouverture…' : "Lancer la vérification d'identité"}
                 </Text>
               </TouchableOpacity>
@@ -344,8 +345,8 @@ export default function AccountSecurityScreen() {
             <TouchableOpacity style={styles.item} activeOpacity={0.7} onPress={handleRequestAccountDeletion}>
               <View style={styles.itemLeft}>
                 <View style={[styles.iconWrapper, styles.iconWrapperDanger]}>
-                  <Trash size={20} color={Colors.error} weight="duotone" />
-                </View>
+                  <NP><Trash size={20} color={Colors.error} weight="duotone" />
+                </NP></View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.itemLabel, styles.itemLabelDanger]}>Supprimer mon compte</Text>
                   <Text style={styles.itemDescription}>
@@ -354,8 +355,8 @@ export default function AccountSecurityScreen() {
                   </Text>
                 </View>
               </View>
-              <CaretRight size={18} color={Colors.textMuted} />
-            </TouchableOpacity>
+              <NP><CaretRight size={18} color={Colors.textMuted} />
+            </NP></TouchableOpacity>
           </GlassCard>
 
           <Text style={styles.footer}>

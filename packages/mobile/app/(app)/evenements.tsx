@@ -11,6 +11,7 @@ import { ArrowLeft, CalendarBlank, MapPin, Users, MoonStars, CheckCircle } from 
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../lib/theme';
 import { fetchEvents, toggleEventRegistration, LunaEvent } from '../../lib/api';
+import { NP } from '../../components/NP';
 
 function formatEventDate(iso: string): string {
   const d = new Date(iso);
@@ -41,8 +42,8 @@ function EventCard({ event, onToggle, isPending }: {
         <View style={styles.cardHeaderLeft}>
           {event.isRegistered && (
             <View style={styles.registeredBadge}>
-              <CheckCircle size={11} color="#fff" weight="fill" />
-              <Text style={styles.registeredBadgeText}>Inscrite</Text>
+              <NP><CheckCircle size={11} color="#fff" weight="fill" />
+              </NP><Text style={styles.registeredBadgeText}>Inscrite</Text>
             </View>
           )}
           {!future && (
@@ -91,8 +92,8 @@ function EventCard({ event, onToggle, isPending }: {
           >
             {event.isRegistered ? (
               <LinearGradient colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)']} style={styles.registerBtnInner}>
-                <CheckCircle size={15} color={Colors.accentPink} weight="fill" />
-                <Text style={[styles.registerBtnText, { color: Colors.accentPink }]}>
+                <NP><CheckCircle size={15} color={Colors.accentPink} weight="fill" />
+                </NP><Text style={[styles.registerBtnText, { color: Colors.accentPink }]}>
                   {isPending ? "…" : "Me désinscrire"}
                 </Text>
               </LinearGradient>
@@ -134,8 +135,8 @@ export default function EventsScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Événements Luna</Text>
             <Text style={styles.subtitle}>

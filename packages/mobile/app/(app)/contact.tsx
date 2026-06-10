@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, EnvelopeSimple, PaperPlaneTilt, MoonStars, InstagramLogo } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../lib/theme';
+import { NP } from '../../components/NP';
 
 const SUBJECTS = [
   { value: 'support',       label: '🛠️  Support technique'       },
@@ -41,8 +42,8 @@ export default function ContactScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Nous contacter</Text>
             <Text style={styles.subtitle}>Nous répondons sous 48h ouvrées</Text>
@@ -111,16 +112,16 @@ export default function ContactScreen() {
                   disabled={!canSend}
                   activeOpacity={0.85}
                 >
-                  <PaperPlaneTilt size={17} color="#fff" weight="fill" />
-                  <Text style={styles.sendBtnText}>Envoyer</Text>
+                  <NP><PaperPlaneTilt size={17} color="#fff" weight="fill" />
+                  </NP><Text style={styles.sendBtnText}>Envoyer</Text>
                 </TouchableOpacity>
 
                 {/* Alternatives */}
                 <View style={styles.altSection}>
                   <Text style={styles.altTitle}>Autres moyens de nous joindre</Text>
                   <TouchableOpacity style={styles.altRow} onPress={() => Linking.openURL('mailto:contact@sferaluna.com')} activeOpacity={0.8}>
-                    <EnvelopeSimple size={18} color={Colors.mutedPurple} weight="duotone" />
-                    <Text style={styles.altText}>contact@sferaluna.com</Text>
+                    <NP><EnvelopeSimple size={18} color={Colors.mutedPurple} weight="duotone" />
+                    </NP><Text style={styles.altText}>contact@sferaluna.com</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.altRow} onPress={() => Linking.openURL('https://instagram.com/sferaluna')} activeOpacity={0.8}>
                     <InstagramLogo size={18} color={Colors.mutedPurple} weight="duotone" />

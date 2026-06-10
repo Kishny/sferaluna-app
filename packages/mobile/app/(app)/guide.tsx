@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, MoonStars } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../lib/theme';
+import { NP } from '../../components/NP';
 
 const STEPS = [
   {
@@ -48,8 +49,8 @@ export default function GuideScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Guide débutant</Text>
             <Text style={styles.subtitle}>Tout ce qu'il faut savoir pour bien commencer</Text>

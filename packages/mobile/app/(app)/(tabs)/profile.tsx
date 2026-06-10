@@ -21,6 +21,7 @@ import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMyProfile, updateMyProfile, uploadAvatar, uploadPhoto, deletePhoto, fetchVisitors, ProfileVisitor } from '../../../lib/api';
 import { getPlanLabel } from '../../../lib/auth';
 import { ApiError } from '../../../lib/http';
+import { NP } from '../../../components/NP';
 
 const SUGGESTED_TAGS = ['Littérature', 'Voyages', 'Cuisine', 'Cinéma', 'Musique', 'Sport', 'Art', 'Nature', 'Yoga', 'Méditation'];
 
@@ -55,8 +56,8 @@ function VisitorsSection() {
   return (
     <View style={styles.visitorsSection}>
       <View style={styles.visitorsTitleRow}>
-        <Crown size={15} color={Colors.accentPink} weight="duotone" />
-        <Text style={styles.visitorsTitle}>Qui a visité mon profil</Text>
+        <NP><Crown size={15} color={Colors.accentPink} weight="duotone" />
+        </NP><Text style={styles.visitorsTitle}>Qui a visité mon profil</Text>
       </View>
       {isLoading ? (
         <Text style={styles.visitorsEmpty}>Chargement…</Text>
@@ -310,7 +311,7 @@ export default function ProfileScreen() {
             <View style={{ flexDirection: 'row', gap: 10 }}>
               {editing && (
                 <TouchableOpacity style={styles.editBtn} onPress={handleCancel}>
-                  <X size={20} color={Colors.textSecondary} />
+                  <NP><X size={20} color={Colors.textSecondary} /></NP>
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -321,8 +322,8 @@ export default function ProfileScreen() {
                 {saveMutation.isPending ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : editing ? (
-                  <Check size={20} color="#fff" />
-                ) : (
+                  <NP><Check size={20} color="#fff" />
+                </NP>) : (
                   <PencilSimple size={20} color={Colors.textSecondary} />
                 )}
               </TouchableOpacity>
@@ -362,7 +363,7 @@ export default function ProfileScreen() {
                 >
                   {avatarMutation.isPending
                     ? <ActivityIndicator size="small" color="#fff" />
-                    : <Camera size={18} color="#fff" />}
+                    : <NP><Camera size={18} color="#fff" /></NP>}
                 </TouchableOpacity>
               )}
             </View>
@@ -371,8 +372,8 @@ export default function ProfileScreen() {
               <Text style={styles.name}>{pseudonyme}{age ? `, ${age}` : ''}</Text>
               {showPlanBadge && (
                 <View style={styles.planBadge}>
-                  <Crown size={12} color="#F59E0B" weight="fill" />
-                  <Text style={styles.planBadgeText}>{planLabel}</Text>
+                  <NP><Crown size={12} color="#F59E0B" weight="fill" />
+                  </NP><Text style={styles.planBadgeText}>{planLabel}</Text>
                 </View>
               )}
             </View>
@@ -428,8 +429,8 @@ export default function ProfileScreen() {
                       Passez Premium pour gagner en visibilité et débloquer toutes les fonctionnalités.
                     </Text>
                   </View>
-                  <CaretRight size={18} color="#fff" />
-                </LinearGradient>
+                  <NP><CaretRight size={18} color="#fff" />
+                </NP></LinearGradient>
               </TouchableOpacity>
             )}
 
@@ -449,8 +450,8 @@ export default function ProfileScreen() {
               <GlassCard style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionIcon}>
-                    <Camera size={16} color={Colors.accentPink} weight="duotone" />
-                  </View>
+                    <NP><Camera size={16} color={Colors.accentPink} weight="duotone" />
+                  </NP></View>
                   <Text style={styles.sectionTitle}>Mes photos</Text>
                   <Text style={styles.photoCount}>{myPhotos.length}/{MAX_PHOTOS}</Text>
                 </View>
@@ -473,8 +474,8 @@ export default function ProfileScreen() {
                               onPress={() => handleDeletePhoto(photoUrl)}
                               hitSlop={4}
                             >
-                              <X size={13} color="#fff" />
-                            </TouchableOpacity>
+                              <NP><X size={13} color="#fff" />
+                            </NP></TouchableOpacity>
                           )}
                         </View>
                       );
@@ -535,8 +536,8 @@ export default function ProfileScreen() {
               <GlassCard style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionIcon}>
-                    <Heart size={16} color={Colors.accentPink} weight="duotone" />
-                  </View>
+                    <NP><Heart size={16} color={Colors.accentPink} weight="duotone" />
+                  </NP></View>
                   <Text style={styles.sectionTitle}>Je recherche</Text>
                 </View>
                 <View style={styles.tagsGrid}>
@@ -569,8 +570,8 @@ export default function ProfileScreen() {
             <GlassCard style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionIcon}>
-                  <Star size={16} color={Colors.accentPink} weight="duotone" />
-                </View>
+                  <NP><Star size={16} color={Colors.accentPink} weight="duotone" />
+                </NP></View>
                 <Text style={styles.sectionTitle}>Mes centres d'intérêt</Text>
               </View>
               <View style={styles.tagsGrid}>
@@ -648,7 +649,7 @@ export default function ProfileScreen() {
                     { icon: <Lightning size={14} color="#a855f7" weight="duotone" />, label: 'VibeSphere', route: '/(app)/vibesphere', bg: 'rgba(168,85,247,0.13)' },
                     { icon: <BookOpen size={14} color="#ec4899" weight="duotone" />, label: 'VibeMentor', route: '/(app)/vibementor', bg: 'rgba(236,72,153,0.13)' },
                     { icon: <CalendarBlank size={14} color="#818cf8" weight="duotone" />, label: 'VibePlanner', route: '/(app)/vibeplanner', bg: 'rgba(129,140,248,0.13)' },
-                    { icon: <Star size={14} color="#f59e0b" weight="duotone" />, label: 'Circle of Six', route: '/(app)/circle', bg: 'rgba(245,158,11,0.13)' },
+                    { icon: <NP><Star size={14} color="#f59e0b" weight="duotone" /></NP>, label: 'Circle of Six', route: '/(app)/circle', bg: 'rgba(245,158,11,0.13)' },
                     { icon: <CalendarBlank size={14} color="#f472b6" weight="duotone" />, label: 'Événements', route: '/(app)/evenements', bg: 'rgba(244,114,182,0.13)' },
                     { icon: <ChatCircleText size={14} color="#4ade80" weight="duotone" />, label: 'Communauté', route: '/(app)/communaute', bg: 'rgba(74,222,128,0.13)' },
                     { icon: <Question size={14} color="#34d399" weight="duotone" />, label: 'FAQ', route: '/(app)/faq', bg: 'rgba(52,211,153,0.13)' },
@@ -689,8 +690,8 @@ export default function ProfileScreen() {
                       </Text>
                     </View>
                   </View>
-                  <CaretRight size={16} color={Colors.textMuted} />
-                </TouchableOpacity>
+                  <NP><CaretRight size={16} color={Colors.textMuted} />
+                </NP></TouchableOpacity>
 
                 <View style={styles.linkDivider} />
 
@@ -708,8 +709,8 @@ export default function ProfileScreen() {
                       <Text style={styles.linkDescription}>Mode Fantôme, notifications, réglages…</Text>
                     </View>
                   </View>
-                  <CaretRight size={16} color={Colors.textMuted} />
-                </TouchableOpacity>
+                  <NP><CaretRight size={16} color={Colors.textMuted} />
+                </NP></TouchableOpacity>
               </GlassCard>
             )}
           </View>

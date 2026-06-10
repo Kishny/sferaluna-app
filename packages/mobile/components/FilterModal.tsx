@@ -10,6 +10,7 @@ import { Colors, Spacing, Radius, Typography } from '../lib/theme';
 import { GlassInput } from './GlassInput';
 import { GradientButton } from './GradientButton';
 import type { DiscoverFilters } from '../lib/api';
+import { NP } from '../components/NP';
 
 // Bornes côté serveur : l'âge minimum cible de SferaLuna est 28 ans
 // (cf. /api/profiles — clamp [28, 120]).
@@ -101,7 +102,7 @@ export function FilterModal({
           <View style={styles.header}>
             <Text style={styles.title}>Filtres de découverte</Text>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-              <X size={20} color={Colors.textSecondary} />
+              <NP><X size={20} color={Colors.textSecondary} /></NP>
             </TouchableOpacity>
           </View>
 
@@ -120,7 +121,7 @@ export function FilterModal({
                       onPress={() => selectAgeRange(range.min, range.max)}
                       activeOpacity={0.8}
                     >
-                      {active && <Check size={14} color="#fff" weight="bold" style={styles.chipIcon} />}
+                      {active && <NP><Check size={14} color="#fff" weight="bold" style={styles.chipIcon} /></NP>}
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>{range.label}</Text>
                     </TouchableOpacity>
                   );
@@ -141,7 +142,7 @@ export function FilterModal({
                       onPress={() => toggleIntention(intention.value)}
                       activeOpacity={0.8}
                     >
-                      {active && <Check size={14} color="#fff" weight="bold" style={styles.chipIcon} />}
+                      {active && <NP><Check size={14} color="#fff" weight="bold" style={styles.chipIcon} /></NP>}
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>{intention.label}</Text>
                     </TouchableOpacity>
                   );
@@ -188,7 +189,7 @@ export function FilterModal({
                       activeOpacity={isPremium ? 0.8 : 1}
                       disabled={!isPremium}
                     >
-                      {active && <Check size={14} color="#fff" weight="bold" style={styles.chipIcon} />}
+                      {active && <NP><Check size={14} color="#fff" weight="bold" style={styles.chipIcon} /></NP>}
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>{orientation.label}</Text>
                     </TouchableOpacity>
                   );
@@ -228,8 +229,8 @@ export function FilterModal({
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.resetBtn} onPress={handleReset} activeOpacity={0.7}>
-              <ArrowCounterClockwise size={16} color={Colors.textSecondary} />
-              <Text style={styles.resetText}>Réinitialiser</Text>
+              <NP><ArrowCounterClockwise size={16} color={Colors.textSecondary} />
+              </NP><Text style={styles.resetText}>Réinitialiser</Text>
             </TouchableOpacity>
             <GradientButton label="Appliquer les filtres" onPress={handleApply} style={styles.applyBtn} />
           </View>

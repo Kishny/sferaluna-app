@@ -14,6 +14,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing } from '../../lib/theme';
 import { registerWithCredentials, signInWithProvider } from '../../lib/auth';
 import { ApiError } from '../../lib/http';
+import { NP } from '../../components/NP';
 
 const steps = ['Identité', 'Contact', 'Sécurité'];
 
@@ -122,8 +123,8 @@ export default function RegisterScreen() {
                   onPress={() => handleProviderRegister('google')}
                   disabled={providerLoading !== null}
                 >
-                  <GoogleLogo size={20} color={Colors.textPrimary} weight="bold" />
-                  <Text style={styles.socialBtnText}>
+                  <NP><GoogleLogo size={20} color={Colors.textPrimary} weight="bold" />
+                  </NP><Text style={styles.socialBtnText}>
                     {providerLoading === 'google' ? 'Connexion…' : "S'inscrire avec Google"}
                   </Text>
                 </TouchableOpacity>
@@ -132,8 +133,8 @@ export default function RegisterScreen() {
                   onPress={() => handleProviderRegister('apple')}
                   disabled={providerLoading !== null}
                 >
-                  <AppleLogo size={20} color={Colors.textPrimary} weight="fill" />
-                  <Text style={styles.socialBtnText}>
+                  <NP><AppleLogo size={20} color={Colors.textPrimary} weight="fill" />
+                  </NP><Text style={styles.socialBtnText}>
                     {providerLoading === 'apple' ? 'Connexion…' : "S'inscrire avec Apple"}
                   </Text>
                 </TouchableOpacity>
@@ -201,7 +202,7 @@ export default function RegisterScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  icon={<EnvelopeSimple size={20} color={Colors.textMuted} />}
+                  icon={<NP><EnvelopeSimple size={20} color={Colors.textMuted} /></NP>}
                 />
               )}
 

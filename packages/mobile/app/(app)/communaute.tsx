@@ -17,6 +17,7 @@ import {
   fetchCommunity, createCommunityPost, likeCommunityPost,
   commentCommunityPost, CommunityPost, CommunityCategory, COMMUNITY_CATEGORIES,
 } from '../../lib/api';
+import { NP } from '../../components/NP';
 
 // ── Pressy ────────────────────────────────────
 function Pressy({ children, onPress, style }: {
@@ -78,12 +79,12 @@ function PostCard({ post, onLike, onComment }: {
       <View style={styles.postActions}>
         <Pressy onPress={onLike} style={styles.actionBtn}>
           <View style={styles.actionBtnInner}>
-            <Heart
+            <NP><Heart
               size={16}
               color={post.isLiked ? Colors.accentPink : Colors.textMuted}
               weight={post.isLiked ? 'fill' : 'regular'}
             />
-            <Text style={[styles.actionCount, post.isLiked && { color: Colors.accentPink }]}>
+            </NP><Text style={[styles.actionCount, post.isLiked && { color: Colors.accentPink }]}>
               {post.likesCount}
             </Text>
           </View>
@@ -144,7 +145,7 @@ function CreatePostModal({ visible, onClose, onCreated }: {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Nouveau post</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <X size={22} color={Colors.textPrimary} />
+              <NP><X size={22} color={Colors.textPrimary} /></NP>
             </TouchableOpacity>
           </View>
 
@@ -187,8 +188,8 @@ function CreatePostModal({ visible, onClose, onCreated }: {
               disabled={!content.trim() || createMutation.isPending}
               activeOpacity={0.85}
             >
-              <PaperPlaneTilt size={16} color="#fff" weight="fill" />
-              <Text style={styles.sendBtnText}>
+              <NP><PaperPlaneTilt size={16} color="#fff" weight="fill" />
+              </NP><Text style={styles.sendBtnText}>
                 {createMutation.isPending ? "Publication…" : "Publier"}
               </Text>
             </TouchableOpacity>
@@ -222,7 +223,7 @@ function CommentModal({ post, visible, onClose }: {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Commenter</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <X size={22} color={Colors.textPrimary} />
+              <NP><X size={22} color={Colors.textPrimary} /></NP>
             </TouchableOpacity>
           </View>
           {post && (
@@ -248,8 +249,8 @@ function CommentModal({ post, visible, onClose }: {
               disabled={!text.trim() || commentMutation.isPending}
               activeOpacity={0.85}
             >
-              <PaperPlaneTilt size={16} color="#fff" weight="fill" />
-              <Text style={styles.sendBtnText}>{commentMutation.isPending ? "…" : "Envoyer"}</Text>
+              <NP><PaperPlaneTilt size={16} color="#fff" weight="fill" />
+              </NP><Text style={styles.sendBtnText}>{commentMutation.isPending ? "…" : "Envoyer"}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -290,15 +291,15 @@ export default function CommunauteScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Communauté Luna</Text>
             <Text style={styles.subtitle}>Partagez, échangez, inspirez</Text>
           </View>
           <TouchableOpacity style={styles.newBtn} onPress={() => setShowCreate(true)} activeOpacity={0.85}>
-            <Plus size={18} color="#fff" weight="bold" />
-          </TouchableOpacity>
+            <NP><Plus size={18} color="#fff" weight="bold" />
+          </NP></TouchableOpacity>
         </View>
 
         {/* Category filter */}

@@ -16,6 +16,7 @@ import {
   VIBEPLAN_CATEGORIES, type VibePlan, type VibePlanStatus,
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
+import { NP } from '../../components/NP';
 
 const FALLBACK = 'https://i.pravatar.cc/200';
 
@@ -91,8 +92,8 @@ function PlanCard({ plan }: { plan: VibePlan }) {
             disabled={acceptMutation.isPending}
             activeOpacity={0.8}
           >
-            <CheckCircle size={15} color="#fff" weight="fill" />
-            <Text style={styles.actionBtnText}>
+            <NP><CheckCircle size={15} color="#fff" weight="fill" />
+            </NP><Text style={styles.actionBtnText}>
               {acceptMutation.isPending ? '…' : 'Accepter'}
             </Text>
           </TouchableOpacity>
@@ -102,8 +103,8 @@ function PlanCard({ plan }: { plan: VibePlan }) {
             disabled={rejectMutation.isPending}
             activeOpacity={0.8}
           >
-            <X size={15} color={Colors.error} />
-            <Text style={[styles.actionBtnText, { color: Colors.error }]}>
+            <NP><X size={15} color={Colors.error} />
+            </NP><Text style={[styles.actionBtnText, { color: Colors.error }]}>
               {rejectMutation.isPending ? '…' : 'Refuser'}
             </Text>
           </TouchableOpacity>
@@ -159,7 +160,7 @@ function NewPlanModal({ visible, onClose }: { visible: boolean; onClose: () => v
           <LinearGradient colors={[Colors.bgMid, Colors.bgDeep]} style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Nouveau plan</Text>
-              <TouchableOpacity onPress={onClose} hitSlop={8}><X size={22} color={Colors.textMuted} /></TouchableOpacity>
+              <TouchableOpacity onPress={onClose} hitSlop={8}><NP><X size={22} color={Colors.textMuted} /></NP></TouchableOpacity>
             </View>
 
             <Text style={styles.modalLabel}>Avec qui ?</Text>
@@ -231,8 +232,8 @@ function NewPlanModal({ visible, onClose }: { visible: boolean; onClose: () => v
               disabled={!canSubmit}
               activeOpacity={0.85}
             >
-              <PaperPlaneTilt size={17} color="#fff" weight="fill" />
-              <Text style={styles.submitBtnText}>{createMutation.isPending ? 'Envoi…' : 'Proposer le plan'}</Text>
+              <NP><PaperPlaneTilt size={17} color="#fff" weight="fill" />
+              </NP><Text style={styles.submitBtnText}>{createMutation.isPending ? 'Envoi…' : 'Proposer le plan'}</Text>
             </TouchableOpacity>
           </LinearGradient>
         </View>
@@ -255,8 +256,8 @@ export default function VibePlannerScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>VibePlanner</Text>
             <Text style={styles.subtitle}>Proposez et organisez vos rendez-vous</Text>

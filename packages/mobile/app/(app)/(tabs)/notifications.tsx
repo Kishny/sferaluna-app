@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchNotificationsSummary, markNotificationsSeen } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
+import { NP } from '../../../components/NP';
 
 const MOON_THOUGHTS_CALM = [
   "Le calme aussi a du charme — profitez-en pour soigner votre profil.",
@@ -87,7 +88,7 @@ export default function NotificationsScreen() {
         },
         {
           id: 'matches',
-          icon: <Heart size={22} color="#fff" weight="fill" />,
+          icon: <NP><Heart size={22} color="#fff" weight="fill" /></NP>,
           gradient: [Colors.accentPurple, Colors.accentPink] as const,
           label: 'Nouveaux matchs',
           hint: 'Une affinité mutuelle vient de naître',
@@ -135,8 +136,8 @@ export default function NotificationsScreen() {
           {total > 0 && (
             <Pressy onPress={() => markSeenMutation.mutate()} disabled={markSeenMutation.isPending} style={styles.markAllWrap}>
               <View style={styles.markAllRow}>
-                <CheckCircle size={15} color={Colors.accentPink} weight="bold" />
-                <Text style={styles.markAll}>
+                <NP><CheckCircle size={15} color={Colors.accentPink} weight="bold" />
+                </NP><Text style={styles.markAll}>
                   {markSeenMutation.isPending ? 'Mise à jour…' : 'Tout marquer comme lu'}
                 </Text>
               </View>

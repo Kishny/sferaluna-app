@@ -17,6 +17,7 @@ import { fetchMyProfile, updateVisibility } from '../../../lib/api';
 import { canUseGhostMode, getPlanLabel, formatFrDate, signOut } from '../../../lib/auth';
 import { ApiError } from '../../../lib/http';
 import { Toast, useToast } from '../../../components/Toast';
+import { NP } from '../../../components/NP';
 
 interface SettingItem {
   id: string;
@@ -176,7 +177,7 @@ export default function SettingsScreen() {
           id: 'matches',
           label: 'Alertes nouveaux matchs',
           description: 'Soyez prévenue dès qu’une affinité naît',
-          icon: <Heart size={18} color="#fff" weight="fill" />,
+          icon: <NP><Heart size={18} color="#fff" weight="fill" /></NP>,
           iconGradient: [Colors.accentPink, '#F59E0B'] as const,
           type: 'toggle',
           value: matches,
@@ -251,7 +252,7 @@ export default function SettingsScreen() {
           id: 'delete',
           label: 'Supprimer mon compte',
           description: 'Action définitive et irréversible',
-          icon: <Trash size={18} color={Colors.error} />,
+          icon: <NP><Trash size={18} color={Colors.error} /></NP>,
           type: 'danger',
           onPress: () => {},
         },
@@ -294,8 +295,8 @@ export default function SettingsScreen() {
               >
                 <View style={styles.planCardTop}>
                   <View style={styles.planIconWrap}>
-                    <Crown size={22} color="#FCD34D" weight="fill" />
-                  </View>
+                    <NP><Crown size={22} color="#FCD34D" weight="fill" />
+                  </NP></View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.planLabel}>{isPremium ? `Plan ${planLabel}` : 'Plan Gratuit'}</Text>
                     <Text style={styles.planDescription} numberOfLines={2}>{subscriptionDescription}</Text>
@@ -322,8 +323,8 @@ export default function SettingsScreen() {
                   <Text style={styles.planCtaText}>
                     {isPremium ? 'Gérer mon abonnement' : 'Découvrir Essentiel, Premium ou Elite — dès 9,99 €/mois'}
                   </Text>
-                  <CaretRight size={14} color="rgba(255,255,255,0.7)" />
-                </View>
+                  <NP><CaretRight size={14} color="rgba(255,255,255,0.7)" />
+                </NP></View>
               </LinearGradient>
             </Pressy>
 
@@ -379,8 +380,8 @@ export default function SettingsScreen() {
                           </View>
                         )}
                         {item.type === 'chevron' && (
-                          <CaretRight size={18} color={Colors.textMuted} />
-                        )}
+                          <NP><CaretRight size={18} color={Colors.textMuted} />
+                        </NP>)}
                       </View>
                     </Pressy>
                   ))}

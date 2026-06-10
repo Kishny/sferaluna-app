@@ -14,6 +14,7 @@ import { fetchMatches, fetchMessages, sendMessage, type ChatMessage } from '../.
 import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
 import { hapticLight, hapticMedium } from '../../../lib/haptics';
+import { NP } from '../../../components/NP';
 
 export default function ChatScreen() {
   const { id: matchId } = useLocalSearchParams<{ id: string }>();
@@ -97,7 +98,7 @@ export default function ChatScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <ArrowLeft size={22} color={Colors.textSecondary} />
+            <NP><ArrowLeft size={22} color={Colors.textSecondary} /></NP>
           </TouchableOpacity>
 
           <View style={styles.contactInfo}>
@@ -116,7 +117,7 @@ export default function ChatScreen() {
           </View>
 
           <TouchableOpacity style={styles.moreBtn}>
-            <DotsThree size={22} color={Colors.textSecondary} />
+            <NP><DotsThree size={22} color={Colors.textSecondary} /></NP>
           </TouchableOpacity>
         </View>
 
@@ -196,11 +197,11 @@ export default function ChatScreen() {
               onPress={handleSend}
               disabled={!input.trim() || sendMutation.isPending}
             >
-              <PaperPlaneRight
+              <NP><PaperPlaneRight
                 size={20}
                 color={input.trim() ? '#fff' : Colors.textMuted}
                 weight="fill"
-              />
+              /></NP>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>

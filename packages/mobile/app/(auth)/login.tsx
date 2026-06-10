@@ -13,6 +13,7 @@ import { GlassInput } from '../../components/GlassInput';
 import { Colors, Spacing } from '../../lib/theme';
 import { signInWithCredentials, signInWithProvider } from '../../lib/auth';
 import { ApiError } from '../../lib/http';
+import { NP } from '../../components/NP';
 
 const SFERALUNA_LOGO = require('../../assets/branding/logo-icon.png');
 
@@ -99,7 +100,7 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                icon={<EnvelopeSimple size={20} color={Colors.textMuted} />}
+                icon={<NP><EnvelopeSimple size={20} color={Colors.textMuted} /></NP>}
               />
 
               <GlassInput
@@ -133,8 +134,8 @@ export default function LoginScreen() {
                 onPress={() => handleProviderLogin('google')}
                 disabled={providerLoading !== null}
               >
-                <GoogleLogo size={20} color={Colors.textPrimary} weight="bold" />
-                <Text style={styles.socialBtnText}>
+                <NP><GoogleLogo size={20} color={Colors.textPrimary} weight="bold" />
+                </NP><Text style={styles.socialBtnText}>
                   {providerLoading === 'google' ? 'Connexion…' : 'Continuer avec Google'}
                 </Text>
               </TouchableOpacity>
@@ -144,8 +145,8 @@ export default function LoginScreen() {
                 onPress={() => handleProviderLogin('apple')}
                 disabled={providerLoading !== null}
               >
-                <AppleLogo size={20} color={Colors.textPrimary} weight="fill" />
-                <Text style={styles.socialBtnText}>
+                <NP><AppleLogo size={20} color={Colors.textPrimary} weight="fill" />
+                </NP><Text style={styles.socialBtnText}>
                   {providerLoading === 'apple' ? 'Connexion…' : 'Continuer avec Apple'}
                 </Text>
               </TouchableOpacity>

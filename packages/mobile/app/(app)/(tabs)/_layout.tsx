@@ -6,6 +6,7 @@ import {
 } from 'phosphor-react-native';
 import { Colors } from '../../../lib/theme';
 import { hapticLight } from '../../../lib/haptics';
+import { NP } from '../../../components/NP';
 
 export default function TabsLayout() {
   // La barre d'onglets est positionnée en absolu par React Navigation : elle
@@ -38,7 +39,7 @@ export default function TabsLayout() {
         options={{
           title: 'Découvrir',
           tabBarIcon: ({ color, size }) => (
-            <Compass size={size} color={color} weight="duotone" />
+            <NP><Compass size={size} color={color} weight="duotone" /></NP>
           ),
         }}
       />
@@ -47,7 +48,7 @@ export default function TabsLayout() {
         options={{
           title: 'Messages',
           tabBarIcon: ({ color, size }) => (
-            <ChatCircle size={size} color={color} weight="duotone" />
+            <NP><ChatCircle size={size} color={color} weight="duotone" /></NP>
           ),
         }}
       />
@@ -56,7 +57,7 @@ export default function TabsLayout() {
         options={{
           title: 'Alertes',
           tabBarIcon: ({ color, size }) => (
-            <Bell size={size} color={color} weight="duotone" />
+            <NP><Bell size={size} color={color} weight="duotone" /></NP>
           ),
         }}
       />
@@ -65,7 +66,7 @@ export default function TabsLayout() {
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size }) => (
-            <User size={size} color={color} weight="duotone" />
+            <NP><User size={size} color={color} weight="duotone" /></NP>
           ),
         }}
       />
@@ -74,7 +75,7 @@ export default function TabsLayout() {
         options={{
           title: 'Réglages',
           tabBarIcon: ({ color, size }) => (
-            <Gear size={size} color={color} weight="duotone" />
+            <NP><Gear size={size} color={color} weight="duotone" /></NP>
           ),
         }}
       />

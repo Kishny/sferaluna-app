@@ -13,6 +13,7 @@ import { Colors, Spacing, Radius } from '../../lib/theme';
 import { fetchCircle, likeProfile, type CircleProfile } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { NP } from '../../components/NP';
 
 const FALLBACK = 'https://i.pravatar.cc/200';
 
@@ -64,8 +65,8 @@ function CircleCard({ profile }: { profile: CircleProfile }) {
 
         {/* Score de compatibilité */}
         <View style={styles.scoreRow}>
-          <Star size={12} color="#F59E0B" weight="fill" />
-          <Text style={styles.scoreText}>{profile.compatibilityScore} pts</Text>
+          <NP><Star size={12} color="#F59E0B" weight="fill" />
+          </NP><Text style={styles.scoreText}>{profile.compatibilityScore} pts</Text>
         </View>
 
         {/* Hints de compatibilité */}
@@ -122,8 +123,8 @@ export default function CircleScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <ArrowLeft size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
+          </NP></TouchableOpacity>
           <View style={styles.headerCenter}>
             <View style={styles.titleRow}>
               <Sparkle size={18} color={Colors.accentPink} weight="fill" />

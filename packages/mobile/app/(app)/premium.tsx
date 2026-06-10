@@ -16,6 +16,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing, Radius } from '../../lib/theme';
 import { createCheckoutSession } from '../../lib/api';
 import { ApiError, API_BASE_URL } from '../../lib/http';
+import { NP } from '../../components/NP';
 
 /**
  * Le backend redirige toujours vers les pages web (success_url → /mon-compte,
@@ -167,8 +168,8 @@ export default function PremiumScreen() {
           {/* Close */}
           <View style={styles.closeRow}>
             <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-              <X size={20} color={Colors.textSecondary} />
-            </TouchableOpacity>
+              <NP><X size={20} color={Colors.textSecondary} />
+            </NP></TouchableOpacity>
           </View>
 
           {/* Hero */}
@@ -219,8 +220,8 @@ export default function PremiumScreen() {
                       <View style={styles.planFeatures}>
                         {plan.features.map((feature) => (
                           <View key={feature} style={styles.featureItem}>
-                            <Check size={16} color={Colors.success} weight="bold" />
-                            <Text style={styles.featureLabel}>{feature}</Text>
+                            <NP><Check size={16} color={Colors.success} weight="bold" />
+                            </NP><Text style={styles.featureLabel}>{feature}</Text>
                           </View>
                         ))}
                       </View>
