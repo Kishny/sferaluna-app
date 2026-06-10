@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Compass, ChatCircle, Bell, User, Gear,
 } from 'phosphor-react-native';
 import { Colors } from '../../../lib/theme';
+import { hapticLight } from '../../../lib/haptics';
 
 export default function TabsLayout() {
   // La barre d'onglets est positionnée en absolu par React Navigation : elle
@@ -17,6 +18,9 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      screenListeners={{
+        tabPress: () => { hapticLight(); },
+      }}
       screenOptions={{
         headerShown: false,
         tabBarStyle: [

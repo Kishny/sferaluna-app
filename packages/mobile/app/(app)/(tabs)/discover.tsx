@@ -19,6 +19,7 @@ import { ApiError } from '../../../lib/http';
 import { FilterModal } from '../../../components/FilterModal';
 import { MatchModal } from '../../../components/MatchModal';
 import { SwipeCard, CardPreview, type SwipeCardHandle } from '../../../components/SwipeCard';
+import { hapticMedium, hapticLight, hapticSuccess, hapticSwipeRelease } from '../../../lib/haptics';
 
 const EMPTY_FILTERS: DiscoverFilters = {};
 
@@ -151,9 +152,11 @@ export default function DiscoverScreen() {
   const performLike = () => {
     if (!profile || likeMutation.isPending) return;
     const liked = profile;
+    hapticSwipeRelease(true);
     likeMutation.mutate(liked._id, {
       onSuccess: (result: { success: true } & LikeResult) => {
         if (result.matched && result.matchId) {
+          hapticSuccess();
           setMatchInfo({ matchId: result.matchId, profile: liked });
         }
       },
@@ -163,14 +166,15 @@ export default function DiscoverScreen() {
 
   const performPass = () => {
     if (!profile) return;
+    hapticSwipeRelease(false);
     advance();
   };
 
-  const handlePassPress = () => { if (profile) cardRef.current?.swipeLeft(); };
-  const handleLikePress = () => { if (profile && !likeMutation.isPending) cardRef.current?.swipeRight(); };
+  const handlePassPress = () => { if (profile) { hapticLight(); cardRef.current?.swipeLeft(); } };
+  const handleLikePress = () => { if (profile && !likeMutation.isPending) { hapticMedium(); cardRef.current?.swipeRight(); } };
   // Pas d'endpoint "super like" dédié côté backend pour l'instant : on
   // déclenche un like classique pour conserver le comportement attendu.
-  const handleSuperLikePress = () => { if (profile && !likeMutation.isPending) cardRef.current?.swipeRight(); };
+  const handleSuperLikePress = () => { if (profile && !likeMutation.isPending) { hapticMedium(); cardRef.current?.swipeRight(); } };
 
   const closeMatchModal = () => setMatchInfo(null);
   const goToMatchChat = () => {

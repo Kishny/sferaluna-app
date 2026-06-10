@@ -7,7 +7,29 @@ import { OneDollarStatsProvider } from "../lib/analytics";
 import { registerForPushNotifications, setupNotificationHandlers, clearBadge } from "../lib/notifications";
 import appJson from "../app.json";
 
-const queryClient = new QueryClient();
+/**
+ * Configuration globale du cache TanStack Query.
+ *
+ * staleTime : 60 s — une donnée fraîche de moins d'une minute est servie
+ * instantanément depuis le cache sans déclencher de requête réseau.
+ * Résultat : la navigation entre onglets est immédiate.
+ *
+ * gcTime : 10 min — les données non affichées restent en mémoire 10 min
+ * (utile pour revenir sur un écran après un appel ou un SMS).
+ *
+ * retry : 1 — en cas d'erreur réseau, on retente une seule fois au lieu de 3
+ * (évite d'attendre 3 × le timeout sur connexion faible).
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,        // 60 s
+      gcTime: 10 * 60 * 1000,      // 10 min
+      retry: 1,
+      refetchOnWindowFocus: false,  // inutile sur mobile (pas de "fenêtre")
+    },
+  },
+});
 
 const applicationId = appJson.expo.extra.applicationId ?? "";
 const hostname = applicationId ? `${applicationId}-mobile` : "localhost";

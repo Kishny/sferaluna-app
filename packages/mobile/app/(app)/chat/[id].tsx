@@ -13,6 +13,7 @@ import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMatches, fetchMessages, sendMessage, type ChatMessage } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
+import { hapticLight, hapticMedium } from '../../../lib/haptics';
 
 export default function ChatScreen() {
   const { id: matchId } = useLocalSearchParams<{ id: string }>();
@@ -58,6 +59,7 @@ export default function ChatScreen() {
   const handleSend = () => {
     const content = input.trim();
     if (!content || sendMutation.isPending) return;
+    hapticMedium();
     setInput('');
     sendMutation.mutate(content);
   };
@@ -65,6 +67,7 @@ export default function ChatScreen() {
   // Réception temps réel via Pusher (canal private-match-{matchId},
   // événement "new-message") — voir lib/realtime.ts.
   const handleIncomingMessage = useCallback((incoming: ChatMessage) => {
+    hapticLight(); // vibration douce à chaque message reçu
     queryClient.setQueryData<typeof messagesData>(['chat', matchId, 'messages'], (prev) => {
       if (!prev) return prev;
       if (prev.messages.some((m) => m._id === incoming._id)) return prev;
