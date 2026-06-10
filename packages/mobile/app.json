@@ -23,7 +23,8 @@
         "NSPhotoLibraryAddUsageDescription": "SferaLuna peut enregistrer des photos dans votre galerie.",
         "NSFaceIDUsageDescription": "SferaLuna utilise Face ID pour sécuriser votre connexion.",
         "NSLocationWhenInUseUsageDescription": "SferaLuna peut utiliser votre position pour afficher les profils proches de vous.",
-        "NSUserNotificationsUsageDescription": "SferaLuna vous envoie des notifications pour vos nouveaux messages et matches."
+        "NSUserNotificationsUsageDescription": "SferaLuna vous envoie des notifications pour vos nouveaux messages et matches.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "usesAppleSignIn": true,
       "entitlements": {
@@ -39,6 +40,15 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
@@ -89,6 +99,12 @@
         "projectId": "cd005024-c3bb-41df-b093-6b54a291de40"
       }
     },
-    "owner": "jeyko.dev"
+    "owner": "jeyko.dev",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/cd005024-c3bb-41df-b093-6b54a291de40"
+    }
   }
 }
