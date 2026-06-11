@@ -22,6 +22,7 @@ import { fetchMyProfile, updateMyProfile, uploadAvatar, uploadPhoto, deletePhoto
 import { getPlanLabel } from '../../../lib/auth';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
+import { hapticMedium, hapticLight } from '../../../lib/haptics';
 
 const SUGGESTED_TAGS = ['Littérature', 'Voyages', 'Cuisine', 'Cinéma', 'Musique', 'Sport', 'Art', 'Nature', 'Yoga', 'Méditation'];
 
@@ -192,9 +193,11 @@ export default function ProfileScreen() {
       setSaveError(null);
       saveMutation.mutate();
     } else {
+      hapticMedium();
       setEditing(true);
     }
   };
+
 
   const handleCancel = () => {
     if (!user) return;

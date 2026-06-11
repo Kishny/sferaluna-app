@@ -2,28 +2,144 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TextInput, Image, KeyboardAvoidingView, Platform, ActivityIndicator,
+  Modal, Animated, ActionSheetIOS, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
-import { ArrowLeft, PaperPlaneRight, DotsThree } from 'phosphor-react-native';
+import { ArrowLeft, PaperPlaneRight, DotsThree, Warning, Trash, BellSlash, Archive, X } from 'phosphor-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMatches, fetchMessages, sendMessage, type ChatMessage } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
-import { hapticLight, hapticMedium } from '../../../lib/haptics';
+import { hapticLight, hapticMedium, hapticWarning } from '../../../lib/haptics';
 import { NP } from '../../../components/NP';
+
+// ─── Menu contextuel ⋯ ───────────────────────────────────────────────────────
+
+const MUTE_OPTIONS = [
+  { label: '15 minutes', value: 15 },
+  { label: '1 heure', value: 60 },
+  { label: '8 heures', value: 480 },
+  { label: '24 heures', value: 1440 },
+];
+
+interface ChatMenuProps {
+  visible: boolean;
+  onClose: () => void;
+  contactName: string;
+  onReport: () => void;
+  onDelete: () => void;
+  onMute: (minutes: number) => void;
+  onArchive: () => void;
+}
+
+function ChatMenu({ visible, onClose, contactName, onReport, onDelete, onMute, onArchive }: ChatMenuProps) {
+  const slideAnim = useRef(new Animated.Value(300)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+  const [showMuteOptions, setShowMuteOptions] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setShowMuteOptions(false);
+      Animated.parallel([
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, friction: 8, tension: 120 }),
+        Animated.timing(backdropAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(slideAnim, { toValue: 300, duration: 200, useNativeDriver: true }),
+        Animated.timing(backdropAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [visible]);
+
+  const menuItems = showMuteOptions
+    ? MUTE_OPTIONS.map((opt) => ({
+        label: opt.label,
+        icon: <BellSlash size={20} color={Colors.textSecondary} weight="duotone" />,
+        onPress: () => { onMute(opt.value); onClose(); },
+        danger: false,
+      }))
+    : [
+        {
+          label: 'Mettre en sourdine',
+          icon: <BellSlash size={20} color={Colors.textSecondary} weight="duotone" />,
+          onPress: () => setShowMuteOptions(true),
+          danger: false,
+        },
+        {
+          label: 'Archiver la conversation',
+          icon: <Archive size={20} color={Colors.textSecondary} weight="duotone" />,
+          onPress: () => { onArchive(); onClose(); },
+          danger: false,
+        },
+        {
+          label: 'Signaler',
+          icon: <Warning size={20} color="#f59e0b" weight="duotone" />,
+          onPress: () => { onReport(); onClose(); },
+          danger: false,
+        },
+        {
+          label: 'Supprimer la conversation',
+          icon: <Trash size={20} color="#ef4444" weight="duotone" />,
+          onPress: () => { onDelete(); onClose(); },
+          danger: true,
+        },
+      ];
+
+  return (
+    <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
+      <Animated.View style={[styles.menuBackdrop, { opacity: backdropAnim }]}>
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+      </Animated.View>
+      <Animated.View style={[styles.menuSheet, { transform: [{ translateY: slideAnim }] }]}>
+        <View style={styles.menuHandle} />
+
+        {/* Titre */}
+        <View style={styles.menuHeader}>
+          <Text style={styles.menuTitle}>
+            {showMuteOptions ? 'Mettre en sourdine' : contactName}
+          </Text>
+          {showMuteOptions && (
+            <TouchableOpacity onPress={() => setShowMuteOptions(false)} style={styles.menuBackBtn}>
+              <NP><X size={18} color={Colors.textSecondary} /></NP>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Options */}
+        {menuItems.map((item, i) => (
+          <TouchableOpacity
+            key={i}
+            style={[styles.menuItem, i < menuItems.length - 1 && styles.menuItemBorder]}
+            onPress={() => { hapticLight(); item.onPress(); }}
+            activeOpacity={0.7}
+          >
+            <NP style={styles.menuItemIcon}>{item.icon}</NP>
+            <Text style={[styles.menuItemLabel, item.danger && styles.menuItemDanger]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+        <View style={{ height: 20 }} />
+      </Animated.View>
+    </Modal>
+  );
+}
+
+// ─── Écran principal ──────────────────────────────────────────────────────────
 
 export default function ChatScreen() {
   const { id: matchId } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const listRef = useRef<FlatList>(null);
   const [input, setInput] = useState('');
+  const [menuVisible, setMenuVisible] = useState(false);
 
-  // Le contact (pseudonyme, photo) provient des matchs déjà chargés dans
-  // l'onglet Messages — pas de route dédiée "GET /api/matches/{id}".
   const { data: matchesData } = useQuery({
     queryKey: ['messages', 'matches'],
     queryFn: fetchMatches,
@@ -36,10 +152,14 @@ export default function ChatScreen() {
     isLoading,
     isError,
     error,
+    refetch,
   } = useQuery({
     queryKey: ['chat', matchId, 'messages'],
     queryFn: () => fetchMessages(matchId!),
     enabled: !!matchId,
+    // Polling de secours toutes les 5 s si Pusher n'est pas disponible
+    refetchInterval: getPusherClient() ? false : 5_000,
+    refetchIntervalInBackground: false,
   });
 
   const messages = messagesData?.messages ?? [];
@@ -65,10 +185,8 @@ export default function ChatScreen() {
     sendMutation.mutate(content);
   };
 
-  // Réception temps réel via Pusher (canal private-match-{matchId},
-  // événement "new-message") — voir lib/realtime.ts.
   const handleIncomingMessage = useCallback((incoming: ChatMessage) => {
-    hapticLight(); // vibration douce à chaque message reçu
+    hapticLight();
     queryClient.setQueryData<typeof messagesData>(['chat', matchId, 'messages'], (prev) => {
       if (!prev) return prev;
       if (prev.messages.some((m) => m._id === incoming._id)) return prev;
@@ -80,16 +198,96 @@ export default function ChatScreen() {
   useEffect(() => {
     if (!matchId) return;
     const pusher = getPusherClient();
-    if (!pusher) return; // Pusher non configuré — le chat reste utilisable via l'API REST.
-
+    if (!pusher) return;
     const channel = pusher.subscribe(matchChannelName(matchId));
     channel.bind('new-message', handleIncomingMessage);
-
     return () => {
       channel.unbind('new-message', handleIncomingMessage);
       pusher.unsubscribe(matchChannelName(matchId));
     };
   }, [matchId, handleIncomingMessage]);
+
+  // ─── Handlers menu ⋯ ───────────────────────────────────────────────
+  const handleMorePress = () => {
+    hapticLight();
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: contact?.pseudonyme ?? 'Conversation',
+          options: ['Annuler', 'Mettre en sourdine', 'Archiver', 'Signaler', 'Supprimer'],
+          cancelButtonIndex: 0,
+          destructiveButtonIndex: 4,
+        },
+        (index) => {
+          if (index === 1) showMuteSheet();
+          else if (index === 2) handleArchive();
+          else if (index === 3) handleReport();
+          else if (index === 4) handleDelete();
+        }
+      );
+    } else {
+      setMenuVisible(true);
+    }
+  };
+
+  const showMuteSheet = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: 'Mettre en sourdine',
+          options: ['Annuler', ...MUTE_OPTIONS.map((o) => o.label)],
+          cancelButtonIndex: 0,
+        },
+        (index) => {
+          if (index > 0) handleMute(MUTE_OPTIONS[index - 1].value);
+        }
+      );
+    }
+  };
+
+  const handleReport = () => {
+    hapticWarning();
+    Alert.alert(
+      'Signaler',
+      `Signaler ${contact?.pseudonyme ?? 'cette utilisatrice'} pour comportement inapproprié ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Signaler', style: 'destructive', onPress: () => {
+          // TODO: POST /api/reports
+          Alert.alert('Signalement envoyé', 'Notre équipe va examiner ce signalement.');
+        }},
+      ]
+    );
+  };
+
+  const handleDelete = () => {
+    hapticWarning();
+    Alert.alert(
+      'Supprimer la conversation',
+      'Cette action est irréversible. La conversation sera supprimée de votre côté.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Supprimer', style: 'destructive', onPress: () => {
+          // TODO: DELETE /api/messages/{matchId}
+          queryClient.removeQueries({ queryKey: ['chat', matchId, 'messages'] });
+          router.back();
+        }},
+      ]
+    );
+  };
+
+  const handleMute = (minutes: number) => {
+    hapticLight();
+    const label = MUTE_OPTIONS.find((o) => o.value === minutes)?.label ?? `${minutes} min`;
+    Alert.alert('Sourdine activée', `Cette conversation sera en sourdine pendant ${label}.`);
+    // TODO: appel API dédié quand la route backend existera
+  };
+
+  const handleArchive = () => {
+    hapticLight();
+    Alert.alert('Conversation archivée', 'Vous pouvez la retrouver dans vos archives.');
+    // TODO: PATCH /api/matches/{matchId}/archive
+  };
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
@@ -97,7 +295,7 @@ export default function ChatScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => { hapticLight(); router.back(); }} style={styles.backBtn}>
             <NP><ArrowLeft size={22} color={Colors.textSecondary} /></NP>
           </TouchableOpacity>
 
@@ -116,7 +314,7 @@ export default function ChatScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.moreBtn}>
+          <TouchableOpacity style={styles.moreBtn} onPress={handleMorePress}>
             <NP><DotsThree size={22} color={Colors.textSecondary} /></NP>
           </TouchableOpacity>
         </View>
@@ -206,6 +404,19 @@ export default function ChatScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* Menu Android */}
+      {Platform.OS !== 'ios' && (
+        <ChatMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          contactName={contact?.pseudonyme ?? 'Conversation'}
+          onReport={handleReport}
+          onDelete={handleDelete}
+          onMute={handleMute}
+          onArchive={handleArchive}
+        />
+      )}
     </LinearGradient>
   );
 }
@@ -314,5 +525,63 @@ const styles = StyleSheet.create({
   sendBtnActive: {
     backgroundColor: Colors.accentPink,
     borderColor: Colors.accentPink,
+  },
+  // ─── Menu BottomSheet (Android) ───
+  menuBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  menuSheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#1e1040',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
+    paddingHorizontal: Spacing.base,
+    borderTopWidth: 1,
+    borderTopColor: Colors.glassBorder,
+  },
+  menuHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  menuHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  menuBackBtn: {
+    padding: 6,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 14,
+  },
+  menuItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.glassBorder,
+  },
+  menuItemIcon: { width: 24, alignItems: 'center' },
+  menuItemLabel: {
+    fontSize: 16,
+    color: Colors.textPrimary,
+  },
+  menuItemDanger: {
+    color: '#ef4444',
   },
 });

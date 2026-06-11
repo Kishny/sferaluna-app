@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
   Animated, RefreshControl,
@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import {
   Heart, ChatCircle, Eye, CheckCircle, MoonStars, BellRinging, SealCheck,
 } from 'phosphor-react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchNotificationsSummary, markNotificationsSeen } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
@@ -68,12 +68,28 @@ export default function NotificationsScreen() {
   const { data, isLoading, isError, error, refetch, isRefetching } = useQuery({
     queryKey: ['notifications', 'summary'],
     queryFn: fetchNotificationsSummary,
+    // Rafraîchissement automatique toutes les 30 s pour garder les compteurs à jour
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
   });
 
   const markSeenMutation = useMutation({
     mutationFn: markNotificationsSeen,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', 'summary'] }),
   });
+
+  // Quand l'utilisatrice arrive sur cet écran, on rafraîchit les compteurs
+  // et on marque automatiquement les notifications comme vues.
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+      // Marquer comme vu après un court délai (laisser le temps d'afficher)
+      const t = setTimeout(() => {
+        if (!markSeenMutation.isPending) markSeenMutation.mutate();
+      }, 1500);
+      return () => clearTimeout(t);
+    }, [])
+  );
 
   const cards = data
     ? [
