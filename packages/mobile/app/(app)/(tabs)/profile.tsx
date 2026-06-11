@@ -325,9 +325,9 @@ export default function ProfileScreen() {
                 {saveMutation.isPending ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : editing ? (
-                  <NP><Check size={20} color="#fff" />
-                </NP>) : (
-                  <PencilSimple size={20} color={Colors.textSecondary} />
+                  <NP><Check size={20} color="#fff" /></NP>
+                ) : (
+                  <NP><PencilSimple size={20} color={Colors.textSecondary} /></NP>
                 )}
               </TouchableOpacity>
             </View>
