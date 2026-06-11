@@ -128,14 +128,11 @@ export function setupNotificationHandlers(options?: {
     }
   );
 
-  // Tap sur une notification (ouvre l'app depuis background/killed)
+  // Tap sur une notification (foreground ou background → premier plan)
   const responseSub = Notifications.addNotificationResponseReceivedListener(
     (response: Notifications.NotificationResponse) => {
-      const data = response.notification.request.content.data;
-      console.log('[Push] Tap:', data);
+      console.log('[Push] Tap:', response.notification.request.content.data);
       options?.onNotificationResponse?.(response);
-      // Navigation automatique selon le type
-      handleNotificationNavigation(data as Record<string, unknown>);
     }
   );
 
@@ -145,22 +142,32 @@ export function setupNotificationHandlers(options?: {
   };
 }
 
-/** Navigue vers le bon écran selon le type de notification. */
-function handleNotificationNavigation(data: Record<string, unknown>) {
-  // Import dynamique pour éviter les dépendances circulaires avec expo-router
-  import('expo-router').then(({ router }) => {
-    const type = data.type as string | undefined;
+/**
+ * Navigue vers le bon écran selon le payload de notification.
+ * Le router est passé en paramètre pour éviter toute dépendance circulaire
+ * et pour garantir qu'il est monté avant l'appel.
+ *
+ * Payload attendu côté backend :
+ *   { type: 'new_message', matchId: '...' }
+ *   { type: 'new_match' }
+ *   { type: 'profile_visit' }
+ *   { type: 'notification' }  ← fallback générique
+ */
+export function navigateFromNotification(
+  data: Record<string, unknown>,
+  router: { push: (href: any) => void }
+) {
+  const type = data?.type as string | undefined;
 
-    if (type === 'new_message' && data.matchId) {
-      router.push(`/(app)/chat/${data.matchId}` as any);
-    } else if (type === 'new_match') {
-      router.push('/(app)/(tabs)/messages' as any);
-    } else if (type === 'profile_visit') {
-      router.push('/(app)/(tabs)/profile' as any);
-    } else if (type === 'notification') {
-      router.push('/(app)/(tabs)/notifications' as any);
-    }
-  });
+  if (type === 'new_message' && data.matchId) {
+    router.push(`/(app)/chat/${data.matchId}` as any);
+  } else if (type === 'new_match') {
+    router.push('/(app)/(tabs)/messages' as any);
+  } else if (type === 'profile_visit') {
+    router.push('/(app)/(tabs)/profile' as any);
+  } else {
+    router.push('/(app)/(tabs)/notifications' as any);
+  }
 }
 
 // ── Gestion du badge ───────────────────────────────────────────────────────

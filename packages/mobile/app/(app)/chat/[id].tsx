@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TextInput, Image, KeyboardAvoidingView, Platform, ActivityIndicator,
-  Modal, Animated, ActionSheetIOS, Alert, Clipboard, ScrollView, Pressable,
+  Modal, Animated, PanResponder, ActionSheetIOS, Alert, Clipboard, ScrollView, Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,11 +12,11 @@ import { StatusBar } from 'expo-status-bar';
 import {
   ArrowLeft, PaperPlaneRight, DotsThree, Warning, Trash, BellSlash,
   Archive, X, Check, Checks, ArrowBendUpLeft, Smiley,
-  Image as ImageIcon, File,
+  Image as ImageIcon, File, Prohibit,
 } from 'phosphor-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
-import { fetchMatches, fetchMessages, sendMessage, type ChatMessage } from '../../../lib/api';
+import { fetchMatches, fetchMessages, sendMessage, blockUser, archiveMatch, muteMatch, deleteMatch, uploadChatImage, type ChatMessage } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
 import { hapticLight, hapticMedium, hapticWarning } from '../../../lib/haptics';
@@ -48,9 +48,10 @@ interface ChatMenuProps {
   onDelete: () => void;
   onMute: (minutes: number) => void;
   onArchive: () => void;
+  onBlock: () => void;
 }
 
-function ChatMenu({ visible, onClose, contactName, onReport, onDelete, onMute, onArchive }: ChatMenuProps) {
+function ChatMenu({ visible, onClose, contactName, onReport, onDelete, onMute, onArchive, onBlock }: ChatMenuProps) {
   const slideAnim = useRef(new Animated.Value(300)).current;
   const backdropAnim = useRef(new Animated.Value(0)).current;
   const [showMuteOptions, setShowMuteOptions] = useState(false);
@@ -81,6 +82,7 @@ function ChatMenu({ visible, onClose, contactName, onReport, onDelete, onMute, o
         { label: 'Mettre en sourdine', icon: <BellSlash size={20} color={Colors.textSecondary} weight="duotone" />, onPress: () => setShowMuteOptions(true), danger: false },
         { label: 'Archiver', icon: <Archive size={20} color={Colors.textSecondary} weight="duotone" />, onPress: () => { onArchive(); onClose(); }, danger: false },
         { label: 'Signaler', icon: <Warning size={20} color="#f59e0b" weight="duotone" />, onPress: () => { onReport(); onClose(); }, danger: false },
+        { label: 'Bloquer', icon: <Prohibit size={20} color="#ef4444" weight="duotone" />, onPress: () => { onBlock(); onClose(); }, danger: true },
         { label: 'Supprimer la conversation', icon: <Trash size={20} color="#ef4444" weight="duotone" />, onPress: () => { onDelete(); onClose(); }, danger: true },
       ];
 
@@ -237,6 +239,113 @@ function EmojiPicker({ visible, onSelect, onClose }: { visible: boolean; onSelec
   );
 }
 
+// ─── Bulle swipeable ─────────────────────────────────────────────────────────
+
+interface SwipeableMessageProps {
+  item: ChatMessage;
+  fromMe: boolean;
+  isLast: boolean;
+  contact: any;
+  reactions: string[];
+  onLongPress: (msg: ChatMessage) => void;
+  onReply: (msg: ChatMessage) => void;
+  onReact: (msg: ChatMessage, emoji: string) => void;
+}
+
+function SwipeableMessage({ item, fromMe, isLast, contact, reactions, onLongPress, onReply, onReact }: SwipeableMessageProps) {
+  const swipeX = useRef(new Animated.Value(0)).current;
+  const SWIPE_THRESHOLD = 60;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderMove: (_e, g) => {
+        // Uniquement vers la droite, avec résistance
+        if (g.dx > 0) swipeX.setValue(Math.min(g.dx * 0.55, 80));
+      },
+      onPanResponderRelease: (_e, g) => {
+        if (g.dx > SWIPE_THRESHOLD) {
+          hapticMedium();
+          onReply(item);
+        }
+        Animated.spring(swipeX, { toValue: 0, useNativeDriver: true, friction: 7, tension: 180 }).start();
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(swipeX, { toValue: 0, useNativeDriver: true, friction: 7, tension: 180 }).start();
+      },
+    })
+  ).current;
+
+  const time = new Date(item.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const isReply = item.content.startsWith('↩ ');
+  const [replyPart, ...bodyParts] = isReply ? item.content.split('\n') : ['', item.content];
+  const bodyText = isReply ? bodyParts.join('\n') : item.content;
+  const isImageMessage = /^https?:\/\/res\.cloudinary\.com\//i.test(bodyText);
+
+  // Icône de réponse qui apparaît lors du swipe
+  const replyIconOpacity = swipeX.interpolate({ inputRange: [20, 50], outputRange: [0, 1], extrapolate: 'clamp' });
+
+  return (
+    <View style={[styles.messageRow, fromMe && styles.messageRowMe]}>
+      {!fromMe && (
+        <TouchableOpacity onPress={() => { hapticLight(); router.push(`/(app)/profil/${contact?._id ?? contact?.pseudonyme}` as any); }}>
+          <Image source={{ uri: contact?.image || 'https://i.pravatar.cc/100' }} style={styles.msgAvatar} />
+        </TouchableOpacity>
+      )}
+
+      {/* Icône réponse (visible au swipe) */}
+      <Animated.View style={[styles.replyIcon, { opacity: replyIconOpacity }]} pointerEvents="none">
+        <ArrowBendUpLeft size={18} color={Colors.accentPink} />
+      </Animated.View>
+
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[{ flexShrink: 1 }, { transform: [{ translateX: swipeX }] }]}
+      >
+        <Pressable onLongPress={() => onLongPress(item)} delayLongPress={300}>
+          <View style={[styles.bubble, fromMe ? styles.bubbleMe : styles.bubbleThem]}>
+            {isReply && (
+              <View style={styles.replyPreviewInBubble}>
+                <Text style={styles.replyPreviewText} numberOfLines={1}>{replyPart.replace('↩ ', '')}</Text>
+              </View>
+            )}
+            {isImageMessage ? (
+              <Image
+                source={{ uri: bodyText }}
+                style={styles.chatImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={[styles.bubbleText, fromMe && styles.bubbleTextMe]}>{bodyText}</Text>
+            )}
+            <View style={styles.bubbleMeta}>
+              <Text style={[styles.timeText, fromMe && styles.timeTextMe]}>{time}</Text>
+              {fromMe && (
+                <View style={styles.readStatus}>
+                  {isLast
+                    ? <NP><Checks size={13} color="rgba(255,255,255,0.7)" /></NP>
+                    : <NP><Check size={13} color="rgba(255,255,255,0.45)" /></NP>
+                  }
+                </View>
+              )}
+            </View>
+          </View>
+        </Pressable>
+        {reactions.length > 0 && (
+          <View style={[styles.reactionsRow, fromMe && styles.reactionsRowMe]}>
+            {reactions.map((emoji, i) => (
+              <TouchableOpacity key={i} onPress={() => onReact(item, emoji)}>
+                <Text style={styles.reactionChip}>{emoji}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </Animated.View>
+    </View>
+  );
+}
+
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
 export default function ChatScreen() {
@@ -316,6 +425,8 @@ export default function ChatScreen() {
   }, [matchId, handleIncomingMessage]);
 
   // ─── Upload image ─────────────────────────────────────────────────────────
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const handlePickImage = async () => {
     hapticLight();
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -325,10 +436,22 @@ export default function ChatScreen() {
       quality: 0.8,
     });
     if (result.canceled || !result.assets?.[0]) return;
-    const uri = result.assets[0].uri;
-    // Envoyer l'URI locale comme placeholder — TODO: upload Cloudinary puis envoyer l'URL
+
+    const asset = result.assets[0];
+    const ext = asset.uri.split('.').pop() ?? 'jpg';
+    const type = asset.mimeType ?? `image/${ext}`;
+    const name = asset.fileName ?? `chat-${Date.now()}.${ext}`;
+
+    setUploadingImage(true);
     hapticMedium();
-    sendMutation.mutate(`📷 [Image] ${uri.split('/').pop()}`);
+    try {
+      const { url } = await uploadChatImage({ uri: asset.uri, name, type });
+      sendMutation.mutate(url);
+    } catch {
+      Alert.alert('Erreur', "Impossible d'envoyer l'image pour l'instant.");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   // ─── Actions message ──────────────────────────────────────────────────────
@@ -361,12 +484,18 @@ export default function ChatScreen() {
     hapticLight();
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
-        { title: contact?.pseudonyme ?? 'Conversation', options: ['Annuler', 'Mettre en sourdine', 'Archiver', 'Signaler', 'Supprimer'], cancelButtonIndex: 0, destructiveButtonIndex: 4 },
+        {
+          title: contact?.pseudonyme ?? 'Conversation',
+          options: ['Annuler', 'Mettre en sourdine', 'Archiver', 'Signaler', 'Bloquer', 'Supprimer'],
+          cancelButtonIndex: 0,
+          destructiveButtonIndex: 5,
+        },
         (index) => {
           if (index === 1) showMuteSheet();
           else if (index === 2) handleArchive();
           else if (index === 3) handleReport();
-          else if (index === 4) handleDelete();
+          else if (index === 4) handleBlock();
+          else if (index === 5) handleDelete();
         }
       );
     } else {
@@ -384,9 +513,74 @@ export default function ChatScreen() {
   };
 
   const handleReport = () => { hapticWarning(); Alert.alert('Signaler', `Signaler ${contact?.pseudonyme ?? 'cette utilisatrice'} ?`, [{ text: 'Annuler', style: 'cancel' }, { text: 'Signaler', style: 'destructive', onPress: () => Alert.alert('Signalement envoyé') }]); };
-  const handleDelete = () => { hapticWarning(); Alert.alert('Supprimer', 'Cette action est irréversible.', [{ text: 'Annuler', style: 'cancel' }, { text: 'Supprimer', style: 'destructive', onPress: () => { queryClient.removeQueries({ queryKey: ['chat', matchId, 'messages'] }); router.back(); } }]); };
-  const handleMute = (minutes: number) => { hapticLight(); Alert.alert('Sourdine', `Conversation en sourdine pendant ${MUTE_OPTIONS.find((o) => o.value === minutes)?.label}.`); };
-  const handleArchive = () => { hapticLight(); Alert.alert('Archivé', 'Conversation archivée.'); };
+  const handleDelete = () => {
+    hapticWarning();
+    Alert.alert('Supprimer la conversation', 'Cette action est irréversible.', [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteMatch(matchId as string);
+            queryClient.invalidateQueries({ queryKey: ['matches'] });
+            queryClient.removeQueries({ queryKey: ['chat', matchId, 'messages'] });
+            router.back();
+          } catch {
+            Alert.alert('Erreur', 'Impossible de supprimer pour l\'instant.');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleMute = async (minutes: number) => {
+    hapticLight();
+    try {
+      await muteMatch(matchId as string, minutes);
+      const label = MUTE_OPTIONS.find((o) => o.value === minutes)?.label ?? `${minutes} min`;
+      Alert.alert('Sourdine activée', `Conversation en sourdine pendant ${label}.`);
+    } catch {
+      Alert.alert('Erreur', 'Impossible de mettre en sourdine pour l\'instant.');
+    }
+  };
+
+  const handleArchive = async () => {
+    hapticLight();
+    try {
+      const result = await archiveMatch(matchId as string) as { archived: boolean };
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      Alert.alert(result.archived ? 'Archivée' : 'Désarchivée', result.archived ? 'Conversation archivée.' : 'Conversation retirée des archives.');
+    } catch {
+      Alert.alert('Erreur', 'Impossible d\'archiver pour l\'instant.');
+    }
+  };
+  const handleBlock = () => {
+    hapticWarning();
+    const name = contact?.pseudonyme ?? 'cette utilisatrice';
+    Alert.alert(
+      'Bloquer',
+      `Bloquer ${name} ? Elle ne pourra plus vous voir ni vous contacter.`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Bloquer',
+          style: 'destructive',
+          onPress: async () => {
+            const targetId = match?.user?._id ?? match?.matchId;
+            if (!targetId) return;
+            try {
+              await blockUser(targetId);
+              queryClient.removeQueries({ queryKey: ['chat', matchId, 'messages'] });
+              router.back();
+            } catch {
+              Alert.alert('Erreur', 'Impossible de bloquer pour l\'instant.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
@@ -455,65 +649,18 @@ export default function ChatScreen() {
                   <Text style={styles.emptyText}>Aucun message pour l'instant.{'\n'}Lancez la conversation 🌙</Text>
                 </View>
               }
-              renderItem={({ item, index }) => {
-                const fromMe = item.senderId === currentUserId;
-                const isLast = index === messages.length - 1;
-                const time = new Date(item.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const msgReactions = reactions[item._id] ?? [];
-                // Détecter si c'est une réponse (commence par ↩)
-                const isReply = item.content.startsWith('↩ ');
-                const [replyPart, ...bodyParts] = isReply ? item.content.split('\n') : ['', item.content];
-                const bodyText = isReply ? bodyParts.join('\n') : item.content;
-
-                return (
-                  <View style={[styles.messageRow, fromMe && styles.messageRowMe]}>
-                    {!fromMe && (
-                      <TouchableOpacity onPress={() => { hapticLight(); router.push(`/(app)/profil/${contact?.pseudonyme}` as any); }}>
-                        <Image source={{ uri: contact?.image || 'https://i.pravatar.cc/100' }} style={styles.msgAvatar} />
-                      </TouchableOpacity>
-                    )}
-                    <View style={{ flexShrink: 1 }}>
-                      <Pressable
-                        onLongPress={() => handleLongPressMessage(item)}
-                        delayLongPress={300}
-                      >
-                        <View style={[styles.bubble, fromMe ? styles.bubbleMe : styles.bubbleThem]}>
-                          {/* Aperçu de réponse */}
-                          {isReply && (
-                            <View style={styles.replyPreviewInBubble}>
-                              <Text style={styles.replyPreviewText} numberOfLines={1}>{replyPart.replace('↩ ', '')}</Text>
-                            </View>
-                          )}
-                          <Text style={[styles.bubbleText, fromMe && styles.bubbleTextMe]}>{bodyText}</Text>
-                          <View style={styles.bubbleMeta}>
-                            <Text style={[styles.timeText, fromMe && styles.timeTextMe]}>{time}</Text>
-                            {/* Lu / Envoyé — double coche pour les messages envoyés */}
-                            {fromMe && (
-                              <View style={styles.readStatus}>
-                                {isLast ? (
-                                  <NP><Checks size={13} color="rgba(255,255,255,0.7)" /></NP>
-                                ) : (
-                                  <NP><Check size={13} color="rgba(255,255,255,0.45)" /></NP>
-                                )}
-                              </View>
-                            )}
-                          </View>
-                        </View>
-                      </Pressable>
-                      {/* Réactions */}
-                      {msgReactions.length > 0 && (
-                        <View style={[styles.reactionsRow, fromMe && styles.reactionsRowMe]}>
-                          {msgReactions.map((emoji, i) => (
-                            <TouchableOpacity key={i} onPress={() => handleReact(item, emoji)}>
-                              <Text style={styles.reactionChip}>{emoji}</Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                );
-              }}
+              renderItem={({ item, index }) => (
+                <SwipeableMessage
+                  item={item}
+                  fromMe={item.senderId === currentUserId}
+                  isLast={index === messages.length - 1}
+                  contact={contact}
+                  reactions={reactions[item._id] ?? []}
+                  onLongPress={handleLongPressMessage}
+                  onReply={(msg) => { setReplyTo(msg); }}
+                  onReact={handleReact}
+                />
+              )}
             />
           )}
 
@@ -537,8 +684,10 @@ export default function ChatScreen() {
               <NP><Smiley size={22} color={Colors.textSecondary} weight="duotone" /></NP>
             </TouchableOpacity>
             {/* Image */}
-            <TouchableOpacity style={styles.attachBtn} onPress={handlePickImage}>
-              <NP><ImageIcon size={22} color={Colors.textSecondary} weight="duotone" /></NP>
+            <TouchableOpacity style={styles.attachBtn} onPress={handlePickImage} disabled={uploadingImage}>
+              {uploadingImage
+                ? <ActivityIndicator size="small" color={Colors.accentPink} />
+                : <NP><ImageIcon size={22} color={Colors.textSecondary} weight="duotone" /></NP>}
             </TouchableOpacity>
 
             <View style={styles.inputWrapper}>
@@ -573,6 +722,7 @@ export default function ChatScreen() {
           onDelete={handleDelete}
           onMute={handleMute}
           onArchive={handleArchive}
+          onBlock={handleBlock}
         />
       )}
 
@@ -631,7 +781,8 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary, marginBottom: 8, textAlign: 'center' },
   emptyText: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', lineHeight: 20 },
   messagesList: { paddingHorizontal: Spacing.base, paddingVertical: 16, gap: 12, flexGrow: 1 },
-  messageRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '82%' },
+  messageRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '82%', overflow: 'visible' },
+  replyIcon: { position: 'absolute', left: -28, bottom: 14 },
   messageRowMe: { alignSelf: 'flex-end', flexDirection: 'row-reverse' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginBottom: 4 },
   bubble: {
@@ -652,6 +803,7 @@ const styles = StyleSheet.create({
   },
   replyPreviewText: { fontSize: 12, color: '#fff', fontStyle: 'italic' },
   bubbleText: { fontSize: 15, color: Colors.textSecondary, lineHeight: 20 },
+  chatImage: { width: 200, height: 200, borderRadius: 10, marginBottom: 2 },
   bubbleTextMe: { color: '#fff' },
   bubbleMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 4 },
   timeText: { fontSize: 11, color: Colors.textMuted },

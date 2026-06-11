@@ -12,14 +12,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
 import {
-  ArrowLeft, SealCheck, Heart, ChatCircleText, Flag,
+  ArrowLeft, SealCheck, Heart, ChatCircleText, Flag, Prohibit,
   MapPin, Sparkle, MoonStars,
 } from 'phosphor-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
-import { fetchPublicProfile, likeProfile, fetchMatches, recordProfileVisit } from '../../../lib/api';
+import { fetchPublicProfile, likeProfile, fetchMatches, recordProfileVisit, blockUser } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
+import { hapticWarning, hapticSuccess } from '../../../lib/haptics';
 
 const AVATAR_SIZE = 100;
 
@@ -27,6 +28,7 @@ export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [reported, setReported] = useState(false);
+  const [blocked, setBlocked] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['public-profile', id],
@@ -67,6 +69,33 @@ export default function PublicProfileScreen() {
           text: "Signaler",
           style: "destructive",
           onPress: () => setReported(true),
+        },
+      ]
+    );
+  };
+
+  const handleBlock = () => {
+    hapticWarning();
+    Alert.alert(
+      "Bloquer ce profil",
+      `Bloquer ${data?.profile?.pseudonyme ?? 'cette utilisatrice'} ? Elle ne pourra plus vous voir ni vous contacter.`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Bloquer",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await blockUser(id!);
+              hapticSuccess();
+              setBlocked(true);
+              Alert.alert("Utilisatrice bloquée", "Vous ne vous verrez plus mutuellement.", [
+                { text: "OK", onPress: () => router.back() },
+              ]);
+            } catch {
+              Alert.alert("Erreur", "Impossible de bloquer pour l'instant.");
+            }
+          },
         },
       ]
     );
@@ -120,11 +149,16 @@ export default function PublicProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
-            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
-          </NP></TouchableOpacity>
-          <TouchableOpacity style={styles.reportBtn} onPress={handleReport} hitSlop={8} disabled={reported}>
-            <NP><Flag size={18} color={reported ? Colors.textMuted : Colors.accentPink} weight={reported ? 'regular' : 'duotone'} />
-          </NP></TouchableOpacity>
+            <NP><ArrowLeft size={22} color={Colors.textPrimary} /></NP>
+          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleBlock} hitSlop={8} disabled={blocked}>
+              <NP><Prohibit size={18} color={blocked ? Colors.textMuted : '#ef4444'} weight={blocked ? 'regular' : 'duotone'} /></NP>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleReport} hitSlop={8} disabled={reported}>
+              <NP><Flag size={18} color={reported ? Colors.textMuted : Colors.accentPink} weight={reported ? 'regular' : 'duotone'} /></NP>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -290,6 +324,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
     alignItems: 'center', justifyContent: 'center',
   },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  /** @deprecated — gardé pour compat si besoin */
   reportBtn: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,

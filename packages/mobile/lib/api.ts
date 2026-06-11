@@ -6,7 +6,7 @@
  * Toutes les routes nécessitent une session NextAuth valide (cookie posé
  * via lib/auth.ts) ; `http` (lib/http.ts) l'envoie automatiquement.
  */
-import { http, API_BASE_URL } from './http';
+import { http, apiFetch, API_BASE_URL } from './http';
 import type { ProfileVisibility, UserPlan, SubscriptionStatus } from './auth';
 
 // ─────────────────────────────────────────────
@@ -676,4 +676,69 @@ export async function deletePhoto(url: string) {
   }
 
   return data as { success: true; photos: string[] };
+}
+
+/**
+ * Upload une image de chat — POST /api/upload/chat-image
+ * Retourne { url: string }
+ */
+export async function uploadChatImage(file: { uri: string; name: string; type: string }) {
+  const formData = new FormData();
+  formData.append('file', { uri: file.uri, name: file.name, type: file.type } as any);
+
+  const res = await fetch(
+    `${API_BASE_URL.replace(/\/$/, '')}/api/upload/chat-image`,
+    { method: 'POST', credentials: 'include', body: formData }
+  );
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok || data?.success === false) {
+    throw new Error(data?.error ?? "Échec de l'upload.");
+  }
+
+  return data as { success: true; url: string };
+}
+
+/**
+ * Archive / désarchive une conversation — PATCH /api/matches/[id]/archive
+ */
+export async function archiveMatch(matchId: string) {
+  return http.patch(`/api/matches/${matchId}/archive`);
+}
+
+/**
+ * Met en sourdine une conversation — PATCH /api/matches/[id]/mute
+ * minutes = 0 pour désactiver
+ */
+export async function muteMatch(matchId: string, minutes: number) {
+  return http.patch(`/api/matches/${matchId}/mute`, { minutes });
+}
+
+/**
+ * Supprime une conversation — DELETE /api/matches/[id]
+ */
+export async function deleteMatch(matchId: string) {
+  return apiFetch(`/api/matches/${matchId}`, { method: 'DELETE' });
+}
+
+/**
+ * Suppression définitive du compte — DELETE /api/users/me
+ * (obligatoire Apple App Store guideline 5.1.1)
+ */
+export async function deleteMyAccount() {
+  return apiFetch('/api/users/me', { method: 'DELETE' });
+}
+
+/**
+ * Bloquer une utilisatrice — POST /api/users/block { targetUserId }
+ */
+export async function blockUser(targetUserId: string) {
+  return http.post('/api/users/block', { targetUserId });
+}
+
+/**
+ * Débloquer une utilisatrice — DELETE /api/users/block { targetUserId }
+ */
+export async function unblockUser(targetUserId: string) {
+  return apiFetch('/api/users/block', { method: 'DELETE', body: { targetUserId } });
 }

@@ -1,50 +1,20 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef } from 'react';
 import { Tabs } from 'expo-router';
 import { StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
 import {
   Compass, ChatCircle, Bell, User, Gear,
 } from 'phosphor-react-native';
 import { Colors } from '../../../lib/theme';
 import { hapticLight } from '../../../lib/haptics';
+import { fetchNotificationsSummary } from '../../../lib/api';
 
-/**
- * Icône de tab animée avec un "wobble" au tap :
- * scale 1 → 1.25 → 0.9 → 1 en séquence rapide (friction/tension, pas reanimated).
- */
-function TabIcon({ Icon, color, size }: { Icon: React.ComponentType<any>; color: string; size: number }) {
-  const scale = useRef(new Animated.Value(1)).current;
-
-  const wobble = useCallback(() => {
-    scale.setValue(1);
-    Animated.sequence([
-      Animated.spring(scale, { toValue: 1.3, useNativeDriver: true, friction: 4, tension: 300 }),
-      Animated.spring(scale, { toValue: 0.88, useNativeDriver: true, friction: 5, tension: 280 }),
-      Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 6, tension: 200 }),
-    ]).start();
-  }, [scale]);
-
-  // L'animation est déclenchée depuis screenListeners.tabPress — on expose
-  // la méthode via une ref partagée sur le nom de l'onglet. Mais pour
-  // simplifier (pas de ref croisée possible facilement avec expo-router Tabs),
-  // on déclenche le wobble directement dans onLayout via un event emitter léger.
-  // Alternative simple : animer au rendu quand `focused` change.
-  return (
-    <Animated.View style={{ transform: [{ scale }] }} pointerEvents="none">
-      <Icon size={size} color={color} weight="duotone" />
-    </Animated.View>
-  );
-}
-
-// Map pour stocker les refs wobble par onglet
-const wobbleRefs: Record<string, () => void> = {};
-
-function makeTabIcon(name: string, Icon: React.ComponentType<any>) {
+function makeTabIcon(Icon: React.ComponentType<any>) {
   return ({ color, size, focused }: { color: string; size: number; focused: boolean }) => {
     const scale = useRef(new Animated.Value(1)).current;
     const prevFocused = useRef(focused);
 
-    // Déclenche le wobble quand l'onglet passe à focused
     if (focused && !prevFocused.current) {
       scale.setValue(1);
       Animated.sequence([
@@ -63,15 +33,26 @@ function makeTabIcon(name: string, Icon: React.ComponentType<any>) {
   };
 }
 
-const DiscoverIcon = makeTabIcon('discover', Compass);
-const MessagesIcon = makeTabIcon('messages', ChatCircle);
-const AlertsIcon = makeTabIcon('notifications', Bell);
-const ProfileIcon = makeTabIcon('profile', User);
-const SettingsIcon = makeTabIcon('settings', Gear);
+const DiscoverIcon  = makeTabIcon(Compass);
+const MessagesIcon  = makeTabIcon(ChatCircle);
+const AlertsIcon    = makeTabIcon(Bell);
+const ProfileIcon   = makeTabIcon(User);
+const SettingsIcon  = makeTabIcon(Gear);
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 8);
+
+  // Compteurs pour les badges — polling léger toutes les 30 s
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications', 'summary'],
+    queryFn: fetchNotificationsSummary,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+  });
+
+  const unreadMessages = notifData?.unreadMessages ?? 0;
+  const totalAlerts    = (notifData?.newMatches ?? 0) + (notifData?.newVisits ?? 0);
 
   return (
     <Tabs
@@ -88,6 +69,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
         tabBarLabelStyle: styles.tabLabel,
         tabBarShowLabel: true,
+        tabBarBadgeStyle: styles.badge,
       }}
     >
       <Tabs.Screen
@@ -102,6 +84,7 @@ export default function TabsLayout() {
         options={{
           title: 'Messages',
           tabBarIcon: (props) => <MessagesIcon {...props} />,
+          tabBarBadge: unreadMessages > 0 ? (unreadMessages > 99 ? '99+' : unreadMessages) : undefined,
         }}
       />
       <Tabs.Screen
@@ -109,6 +92,7 @@ export default function TabsLayout() {
         options={{
           title: 'Alertes',
           tabBarIcon: (props) => <AlertsIcon {...props} />,
+          tabBarBadge: totalAlerts > 0 ? (totalAlerts > 99 ? '99+' : totalAlerts) : undefined,
         }}
       />
       <Tabs.Screen
@@ -139,5 +123,14 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 11,
     fontWeight: '500',
+  },
+  badge: {
+    backgroundColor: Colors.accentPink,
+    fontSize: 10,
+    fontWeight: '700',
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    lineHeight: 16,
   },
 });

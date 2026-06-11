@@ -13,7 +13,7 @@
  * rendant "Sécurité du compte" réellement navigable.
  */
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import * as WebBrowser from 'expo-web-browser';
@@ -21,13 +21,13 @@ import { LinearGradient } from '../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
 import {
   CaretLeft, CaretRight, Fingerprint, ShieldCheck, ShieldWarning,
-  Envelope, Key, IdentificationBadge, Trash,
+  Envelope, Key, IdentificationBadge, Trash, Warning,
 } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing, Radius } from '../../lib/theme';
-import { fetchMyProfile, createIdentityVerificationSession, requestPasswordReset } from '../../lib/api';
-import { getSession, type AuthProvider } from '../../lib/auth';
+import { fetchMyProfile, createIdentityVerificationSession, requestPasswordReset, deleteMyAccount } from '../../lib/api';
+import { getSession, signOut, type AuthProvider } from '../../lib/auth';
 import { ApiError } from '../../lib/http';
 import { Toast, useToast } from '../../components/Toast';
 import {
@@ -73,6 +73,7 @@ export default function AccountSecurityScreen() {
 
   const [resetBusy, setResetBusy] = useState(false);
   const [verifyBusy, setVerifyBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const handleRequestPasswordReset = async () => {
     if (!email || resetBusy) return;
@@ -107,13 +108,53 @@ export default function AccountSecurityScreen() {
   };
 
   const handleRequestAccountDeletion = () => {
-    const subject = encodeURIComponent('Demande de suppression de mon compte SferaLuna');
-    const body = encodeURIComponent(
-      `Bonjour,\n\nJe souhaite supprimer définitivement mon compte SferaLuna associé à l'adresse ${email ?? '(email à préciser)'}.\n\nMerci de me confirmer la prise en compte de cette demande.\n\nCordialement.`
+    // Étape 1 : avertissement clair
+    Alert.alert(
+      '⚠️ Supprimer mon compte',
+      'Cette action est définitive et irréversible.\n\nToutes vos données seront supprimées : profil, photos, messages, matches, abonnement.\n\nContinuer ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Continuer →',
+          style: 'destructive',
+          onPress: handleConfirmDeletion,
+        },
+      ]
     );
-    Linking.openURL(`mailto:contact@sferaluna.com?subject=${subject}&body=${body}`).catch(() => {
-      showToast("Impossible d'ouvrir votre application mail.", 'error');
-    });
+  };
+
+  const handleConfirmDeletion = () => {
+    // Étape 2 : confirmation finale (obligatoire Apple)
+    Alert.alert(
+      'Confirmation définitive',
+      `Supprimer définitivement le compte ${email ?? 'SferaLuna'} ? Il n'y a aucun retour en arrière possible.`,
+      [
+        { text: 'Non, annuler', style: 'cancel' },
+        {
+          text: 'Oui, supprimer',
+          style: 'destructive',
+          onPress: executeDeletion,
+        },
+      ]
+    );
+  };
+
+  const executeDeletion = async () => {
+    if (deleteBusy) return;
+    setDeleteBusy(true);
+    try {
+      await deleteMyAccount();
+      await signOut();
+      // La déconnexion via signOut redirige automatiquement vers l'écran auth
+      router.replace('/(auth)/login' as any);
+    } catch (e) {
+      showToast(
+        e instanceof ApiError ? e.message : 'Impossible de supprimer le compte pour l\'instant.',
+        'error'
+      );
+    } finally {
+      setDeleteBusy(false);
+    }
   };
 
   // Connexion biométrique (Face ID / Touch ID) — voir lib/biometrics.ts.
@@ -196,7 +237,7 @@ export default function AccountSecurityScreen() {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
           <Text style={styles.intro}>
-            Renforcez la protection de l’accès à votre compte SferaLuna — au-delà de votre mot de
+            Renforcez la protection de l'accès à votre compte SferaLuna — au-delà de votre mot de
             passe ou de votre connexion Google / Apple.
           </Text>
 
@@ -299,7 +340,7 @@ export default function AccountSecurityScreen() {
                 )}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.itemLabel}>Vérification d’identité</Text>
+                <Text style={styles.itemLabel}>Vérification d'identité</Text>
                 <Text style={styles.itemDescription}>
                   {identityVerified
                     ? 'Votre identité a été vérifiée — votre profil bénéficie du badge de confiance auprès des autres membres.'
@@ -338,29 +379,37 @@ export default function AccountSecurityScreen() {
             ) : null}
           </GlassCard>
 
-          {/* Suppression du compte — pas de route self-service côté backend ;
-              on route vers le support par email plutôt que de simuler une
-              action que l'API ne sait pas exécuter. */}
+          {/* Suppression du compte — flow 2 étapes, obligatoire Apple guideline 5.1.1 */}
           <GlassCard padding={0} style={styles.card}>
-            <TouchableOpacity style={styles.item} activeOpacity={0.7} onPress={handleRequestAccountDeletion}>
+            <TouchableOpacity
+              style={styles.item}
+              activeOpacity={0.7}
+              onPress={handleRequestAccountDeletion}
+              disabled={deleteBusy}
+            >
               <View style={styles.itemLeft}>
                 <View style={[styles.iconWrapper, styles.iconWrapperDanger]}>
-                  <NP><Trash size={20} color={Colors.error} weight="duotone" />
-                </NP></View>
+                  <NP>
+                    {deleteBusy
+                      ? <Warning size={20} color={Colors.error} weight="duotone" />
+                      : <Trash size={20} color={Colors.error} weight="duotone" />}
+                  </NP>
+                </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.itemLabel, styles.itemLabelDanger]}>Supprimer mon compte</Text>
+                  <Text style={[styles.itemLabel, styles.itemLabelDanger]}>
+                    {deleteBusy ? 'Suppression en cours...' : 'Supprimer mon compte'}
+                  </Text>
                   <Text style={styles.itemDescription}>
-                    Envoie une demande à notre support — la suppression est traitée manuellement,
-                    aucune action automatique n’est effectuée immédiatement.
+                    Supprime définitivement votre compte, vos photos, vos messages et annule votre abonnement. Action irréversible.
                   </Text>
                 </View>
               </View>
-              <NP><CaretRight size={18} color={Colors.textMuted} />
-            </NP></TouchableOpacity>
+              {!deleteBusy && <NP><CaretRight size={18} color={Colors.textMuted} /></NP>}
+            </TouchableOpacity>
           </GlassCard>
 
           <Text style={styles.footer}>
-            Besoin d’aide pour sécuriser votre compte ou de signaler une activité suspecte ?
+            Besoin d'aide pour sécuriser votre compte ou de signaler une activité suspecte ?
             Contactez-nous à contact@sferaluna.com.
           </Text>
         </ScrollView>
