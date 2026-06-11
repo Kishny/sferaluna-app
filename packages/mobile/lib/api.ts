@@ -679,6 +679,13 @@ export async function deletePhoto(url: string) {
 }
 
 /**
+ * Marque comme lus les messages reçus dans un match — POST /api/messages/[matchId]/read
+ */
+export async function markMessagesRead(matchId: string) {
+  return http.post(`/api/messages/${matchId}/read`);
+}
+
+/**
  * Upload une image de chat — POST /api/upload/chat-image
  * Retourne { url: string }
  */

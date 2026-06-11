@@ -14,9 +14,9 @@ import {
   Archive, X, Check, Checks, ArrowBendUpLeft, Smiley,
   Image as ImageIcon, File, Prohibit,
 } from 'phosphor-react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
-import { fetchMatches, fetchMessages, sendMessage, blockUser, archiveMatch, muteMatch, deleteMatch, uploadChatImage, type ChatMessage } from '../../../lib/api';
+import { fetchMatches, fetchMessages, sendMessage, blockUser, archiveMatch, muteMatch, deleteMatch, uploadChatImage, markMessagesRead, type ChatMessage } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
 import { hapticLight, hapticMedium, hapticWarning } from '../../../lib/haptics';
@@ -323,9 +323,11 @@ function SwipeableMessage({ item, fromMe, isLast, contact, reactions, onLongPres
               <Text style={[styles.timeText, fromMe && styles.timeTextMe]}>{time}</Text>
               {fromMe && (
                 <View style={styles.readStatus}>
-                  {isLast
-                    ? <NP><Checks size={13} color="rgba(255,255,255,0.7)" /></NP>
-                    : <NP><Check size={13} color="rgba(255,255,255,0.45)" /></NP>
+                  {item.readAt
+                    ? <NP><Checks size={13} color="#60d4f4" /></NP>
+                    : isLast
+                      ? <NP><Checks size={13} color="rgba(255,255,255,0.55)" /></NP>
+                      : <NP><Check size={13} color="rgba(255,255,255,0.35)" /></NP>
                   }
                 </View>
               )}
@@ -418,11 +420,36 @@ export default function ChatScreen() {
     if (!pusher) return;
     const channel = pusher.subscribe(matchChannelName(matchId));
     channel.bind('new-message', handleIncomingMessage);
+
+    // Quand l'autre utilisatrice lit nos messages → mettre à jour readAt en cache
+    const handleMessagesRead = ({ readAt }: { readerId: string; readAt: string }) => {
+      queryClient.setQueryData<typeof messagesData>(['chat', matchId, 'messages'], (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          messages: prev.messages.map((m) =>
+            m.senderId === prev.currentUserId && !m.readAt
+              ? { ...m, readAt }
+              : m
+          ),
+        };
+      });
+    };
+    channel.bind('messages-read', handleMessagesRead);
+
     return () => {
       channel.unbind('new-message', handleIncomingMessage);
+      channel.unbind('messages-read', handleMessagesRead);
       pusher.unsubscribe(matchChannelName(matchId));
     };
   }, [matchId, handleIncomingMessage]);
+
+  // Marquer les messages comme lus quand l'écran prend le focus
+  useFocusEffect(useCallback(() => {
+    if (matchId) {
+      markMessagesRead(matchId as string).catch(() => {});
+    }
+  }, [matchId]));
 
   // ─── Upload image ─────────────────────────────────────────────────────────
   const [uploadingImage, setUploadingImage] = useState(false);
