@@ -40,7 +40,6 @@
         "@expo/metro-runtime": "~6.1.2",
         "@expo/vector-icons": "^15.0.3",
         "@react-native-community/netinfo": "11.4.1",
-        "@stripe/stripe-react-native": "0.50.3",
         "@tanstack/react-query": "^5.96.1",
         "expo": "~54.0.35",
         "expo-apple-authentication": "~8.0.8",
@@ -906,8 +905,6 @@
     "@smithy/util-waiter": ["@smithy/util-waiter@4.2.14", "", { "dependencies": { "@smithy/types": "^4.13.1", "tslib": "^2.6.2" } }, "sha512-2zqq5o/oizvMaFUlNiTyZ7dbgYv1a893aGut2uaxtbzTx/VYYnRxWzDHuD/ftgcw94ffenua+ZNLrbqwUYE+Bg=="],
 
     "@smithy/uuid": ["@smithy/uuid@1.1.2", "", { "dependencies": { "tslib": "^2.6.2" } }, "sha512-O/IEdcCUKkubz60tFbGA7ceITTAJsty+lBjNoorP4Z6XRqaFb/OjQjZODophEcuq68nKm6/0r+6/lLQ+XVpk8g=="],
-
-    "@stripe/stripe-react-native": ["@stripe/stripe-react-native@0.50.3", "", { "peerDependencies": { "expo": ">=46.0.9", "react": "*", "react-native": "*" }, "optionalPeers": ["expo"] }, "sha512-nzOjqZXQKdM7y33Em2JZxCTAgf/q/J51IJQ50XtwIL0QT6Jt5WSmfKm9rGmBhoXxxG4DcXu/qxJeAHlhcPDGQg=="],
 
     "@szmarczak/http-timer": ["@szmarczak/http-timer@4.0.6", "", { "dependencies": { "defer-to-connect": "^2.0.0" } }, "sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w=="],
 
