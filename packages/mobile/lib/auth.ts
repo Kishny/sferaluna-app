@@ -184,6 +184,7 @@ export async function signInWithGoogle(): Promise<Session> {
   // @ts-ignore — expo-auth-session installé via bun install
   const { makeRedirectUri } = await import('expo-auth-session');
   const WebBrowser = await import('expo-web-browser');
+  const { Platform } = await import('react-native');
   await WebBrowser.maybeCompleteAuthSession();
 
   const discovery = {
@@ -193,14 +194,19 @@ export async function signInWithGoogle(): Promise<Session> {
 
   const redirectUri = makeRedirectUri({ scheme: 'sferaluna', path: 'auth' });
 
-  const clientId =
-    process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_NATIVE ??
-    process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ??
-    '';
+  // iOS et Android ont des clients OAuth Google distincts
+  const clientId = Platform.OS === 'ios'
+    ? (process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS ??
+       process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_NATIVE ??
+       process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? '')
+    : (process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_NATIVE ??
+       process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? '');
 
   if (!clientId) {
     throw new ApiError(
-      "EXPO_PUBLIC_GOOGLE_CLIENT_ID_NATIVE non configuré. Ajoutez-le dans .env.",
+      Platform.OS === 'ios'
+        ? "EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS non configuré. Ajoutez-le dans .env."
+        : "EXPO_PUBLIC_GOOGLE_CLIENT_ID_NATIVE non configuré. Ajoutez-le dans .env.",
       501,
       'PROVIDER_NOT_CONFIGURED'
     );
