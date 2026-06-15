@@ -134,7 +134,7 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safe: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#1a0b2e' },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -164,9 +164,10 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   logo: {
-    width: 104,
-    height: 104,
+    width: 180,
+    height: 180,
     zIndex: 2,
+    borderRadius: 90,
   },
   glow: {
     position: 'absolute',

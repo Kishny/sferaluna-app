@@ -24,7 +24,14 @@
         "NSFaceIDUsageDescription": "SferaLuna utilise Face ID pour sécuriser votre connexion.",
         "NSLocationWhenInUseUsageDescription": "SferaLuna peut utiliser votre position pour afficher les profils proches de vous.",
         "NSUserNotificationsUsageDescription": "SferaLuna vous envoie des notifications pour vos nouveaux messages et matches.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.581053626274-st37aibhvu83ce9eg6vr94d2pjkelueq"
+            ]
+          }
+        ]
       },
       "usesAppleSignIn": true,
       "entitlements": {
@@ -33,9 +40,9 @@
     },
     "android": {
       "package": "com.sferaluna.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a0b2e"
       },
       "edgeToEdgeEnabled": true,

@@ -170,7 +170,7 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  safe: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#1a0b2e' },
   scroll: { flexGrow: 1, paddingHorizontal: Spacing.xl, paddingBottom: 40 },
   back: { paddingTop: Spacing.base, marginBottom: 24 },
   backText: { color: Colors.textSecondary, fontSize: 14 },

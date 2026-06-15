@@ -266,7 +266,7 @@ export default function PremiumScreen() {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  safe: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#1a0b2e' },
   closeRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

@@ -133,7 +133,7 @@ export default function PrivacyPolicyScreen() {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  safe: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#1a0b2e' },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
