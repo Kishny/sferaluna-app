@@ -54,6 +54,7 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 *.pem
+google-service-account.json
 
 # Metro
 .metro-health-check*
