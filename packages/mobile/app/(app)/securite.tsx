@@ -15,7 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as WebBrowser from 'expo-web-browser';
 import { LinearGradient } from '../../components/LinearGradient';
 import { OrbitGlow } from '../../components/OrbitGlow';
@@ -24,12 +24,12 @@ import {
   CaretLeft, CaretRight, Fingerprint, ShieldCheck, ShieldWarning,
   Envelope, Key, IdentificationBadge, Trash, Warning,
 } from 'phosphor-react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing, Radius } from '../../lib/theme';
 import { fetchMyProfile, createIdentityVerificationSession, requestPasswordReset, deleteMyAccount } from '../../lib/api';
 import { getSession, signOut, type AuthProvider } from '../../lib/auth';
-import { ApiError } from '../../lib/http';
+import { ApiError, API_BASE_URL } from '../../lib/http';
 import { Toast, useToast } from '../../components/Toast';
 import {
   isBiometricHardwareAvailable,
@@ -39,6 +39,17 @@ import {
   authenticateWithBiometrics,
 } from '../../lib/biometrics';
 import { NP } from '../../components/NP';
+
+/**
+ * Le backend Stripe Identity redirige toujours vers une page web
+ * (`return_url: ${appUrl}/inscription?verification=success`) — identique au
+ * flow Stripe Checkout (voir premium.tsx). On ouvre donc la vérification
+ * dans une session d'authentification in-app : dès que la navigation revient
+ * sur le domaine de l'app (même origine que l'API), la fenêtre se ferme
+ * automatiquement et on peut rafraîchir le statut réel (`identityVerified`
+ * est calculé serveur via le webhook Stripe, jamais piloté côté client).
+ */
+const APP_ORIGIN = API_BASE_URL.replace(/\/$/, '');
 
 /** Libellé FR de la méthode de connexion — alignée sur AuthProvider (lib/auth.ts). */
 function getProviderLabel(provider?: AuthProvider): string {
@@ -65,6 +76,17 @@ export default function AccountSecurityScreen() {
     queryFn: fetchMyProfile,
   });
   const identityVerified = Boolean(profileData?.user.identityVerified);
+  const queryClient = useQueryClient();
+
+  // La vérification Stripe Identity peut être traitée en arrière-plan
+  // (webhook `identity.verification_session.verified`) après la fermeture de
+  // la fenêtre in-app. On rafraîchit donc aussi le statut chaque fois que cet
+  // écran reprend le focus, en plus de l'invalidation explicite après retour.
+  useFocusEffect(
+    React.useCallback(() => {
+      queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
+    }, [queryClient])
+  );
 
   // Méthode de connexion + email — issus de la session NextAuth (JWT) déjà
   // persistée localement, pas besoin d'un appel API dédié.
@@ -97,7 +119,20 @@ export default function AccountSecurityScreen() {
     setVerifyBusy(true);
     try {
       const { url } = await createIdentityVerificationSession();
-      await WebBrowser.openBrowserAsync(url);
+      // Session d'authentification in-app (même pattern que Stripe Checkout
+      // dans premium.tsx) : se ferme automatiquement dès le retour sur
+      // l'origine de l'app, plutôt qu'un simple onglet navigateur dont on ne
+      // détecte jamais la fermeture/redirection.
+      const result = await WebBrowser.openAuthSessionAsync(url, APP_ORIGIN);
+
+      if (result.type === 'success') {
+        await queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
+        showToast(
+          'Vérification envoyée — le statut sera mis à jour dès son traitement par Stripe (quelques instants à quelques minutes).',
+          'success'
+        );
+      }
+      // type 'cancel' / 'dismiss' : fenêtre fermée manuellement — rien à faire.
     } catch (e) {
       showToast(
         e instanceof ApiError ? e.message : 'Impossible de lancer la vérification pour le moment.',
