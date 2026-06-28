@@ -6,10 +6,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from '../../components/LinearGradient';
+import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, SealCheck, MapPin, Sparkle, Star } from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius } from '../../lib/theme';
+import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
 import { fetchCircle, likeProfile, type CircleProfile } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,7 +23,7 @@ function formatWeekOf(iso: string): string {
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 }
 
-function CircleCard({ profile }: { profile: CircleProfile }) {
+function CircleCard({ profile, index }: { profile: CircleProfile; index: number }) {
   const queryClient = useQueryClient();
   const likeMutation = useMutation({
     mutationFn: () => likeProfile(profile._id),
@@ -30,9 +31,11 @@ function CircleCard({ profile }: { profile: CircleProfile }) {
   });
 
   const tags = [...(profile.intentions ?? []), ...(profile.interets ?? [])].slice(0, 3);
+  const accent = ACCENT_BARS[index % ACCENT_BARS.length];
 
   return (
     <View style={styles.card}>
+      <LinearGradient colors={accent} style={styles.accentBar} />
       <LinearGradient
         colors={[Colors.accentPurple, Colors.accentPink]}
         style={styles.cardHalo}
@@ -118,6 +121,8 @@ export default function CircleScreen() {
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
+      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         {/* Header */}
@@ -170,7 +175,7 @@ export default function CircleScreen() {
             contentContainerStyle={styles.grid}
             columnWrapperStyle={styles.row}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <CircleCard profile={item} />}
+            renderItem={({ item, index }) => <CircleCard profile={item} index={index} />}
           />
         )}
       </SafeAreaView>
@@ -181,7 +186,7 @@ export default function CircleScreen() {
 const CARD_SIZE = 168;
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
+  bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   header: {
     flexDirection: 'row',
@@ -234,6 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 14,
   },
+  accentBar: { width: '100%', height: 3 },
   cardHalo: {
     width: '100%',
     alignItems: 'center',

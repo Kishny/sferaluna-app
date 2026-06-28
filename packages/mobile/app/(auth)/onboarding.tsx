@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from '../../components/LinearGradient';
+import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GradientButton } from '../../components/GradientButton';
@@ -62,8 +63,10 @@ export default function OnboardingScreen() {
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.container}>
+      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
-      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         {/* Skip */}
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
@@ -133,7 +136,7 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   topBar: {
     flexDirection: 'row',

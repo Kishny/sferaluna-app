@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from '../../components/LinearGradient';
+import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, MoonStars, Heart, ShieldCheck, EnvelopeSimple } from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius } from '../../lib/theme';
+import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
 import { NP } from '../../components/NP';
 
 const TEAM = [
@@ -65,6 +66,8 @@ const VALUES = [
 export default function EquipeScreen() {
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
+      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
@@ -107,8 +110,9 @@ export default function EquipeScreen() {
           {/* Valeurs */}
           <Text style={[styles.sectionTitle, { marginTop: 8 }]}>Nos valeurs</Text>
           <View style={styles.valuesGrid}>
-            {VALUES.map((v) => (
+            {VALUES.map((v, index) => (
               <View key={v.title} style={styles.valueCard}>
+                <LinearGradient colors={ACCENT_BARS[index % ACCENT_BARS.length]} style={styles.valueAccent} />
                 <Text style={styles.valueEmoji}>{v.emoji}</Text>
                 <Text style={styles.valueTitle}>{v.title}</Text>
                 <Text style={styles.valueText}>{v.text}</Text>
@@ -156,7 +160,7 @@ export default function EquipeScreen() {
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
+  bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -193,8 +197,9 @@ const styles = StyleSheet.create({
   valuesGrid: { gap: 10 },
   valueCard: {
     backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
-    borderRadius: Radius.xl, padding: 16, gap: 6,
+    borderRadius: Radius.xl, padding: 16, paddingLeft: 19, gap: 6, overflow: 'hidden',
   },
+  valueAccent: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 3 },
   valueEmoji: { fontSize: 22 },
   valueTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
   valueText: { fontSize: 13.5, color: Colors.textSecondary, lineHeight: 19 },

@@ -32,6 +32,18 @@ export const Colors = {
   warning: '#F59E0B',
 };
 
+/**
+ * Palette tournante des bordures d'accent (cartes, listes), reprise du
+ * site web (benefitBars / faqAccentThemes) : violet, corail, sarcelle, orange.
+ * Utiliser `ACCENT_BARS[index % ACCENT_BARS.length]` avec <LinearGradient />.
+ */
+export const ACCENT_BARS: readonly [string, string][] = [
+  ['#8E7AB5', '#D9B8FF'],
+  ['#FF6B6B', '#FF8E8E'],
+  ['#4ECDC4', '#44A08D'],
+  ['#FFD166', '#FF9A3C'],
+];
+
 export const Spacing = {
   xs: 4,
   sm: 8,

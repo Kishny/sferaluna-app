@@ -612,7 +612,7 @@ export default function ChatScreen() {
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
       <StatusBar style="light" />
-      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => { hapticLight(); router.back(); }} style={styles.backBtn}>

@@ -7,12 +7,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../components/LinearGradient';
+import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import {
   ArrowLeft, Heart, ChatCircleText, Plus, X, PaperPlaneTilt, MoonStars,
 } from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius } from '../../lib/theme';
+import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
 import {
   fetchCommunity, createCommunityPost, likeCommunityPost,
   commentCommunityPost, CommunityPost, CommunityCategory, COMMUNITY_CATEGORIES,
@@ -47,15 +48,18 @@ function timeAgo(iso: string): string {
 }
 
 // ── Post Card ─────────────────────────────────
-function PostCard({ post, onLike, onComment }: {
+function PostCard({ post, index, onLike, onComment }: {
   post: CommunityPost;
+  index: number;
   onLike: () => void;
   onComment: () => void;
 }) {
   const cat = COMMUNITY_CATEGORIES.find((c) => c.value === post.category);
+  const accent = ACCENT_BARS[index % ACCENT_BARS.length];
 
   return (
     <View style={styles.card}>
+      <LinearGradient colors={accent} style={styles.accentBar} />
       {/* Author row */}
       <View style={styles.authorRow}>
         <View style={styles.authorAvatar}>
@@ -286,6 +290,8 @@ export default function CommunauteScreen() {
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
+      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         {/* Header */}
@@ -354,9 +360,10 @@ export default function CommunauteScreen() {
             onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
             onEndReachedThreshold={0.3}
             ListFooterComponent={isFetchingNextPage ? <ActivityIndicator color={Colors.accentPink} style={{ marginVertical: 16 }} /> : null}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <PostCard
                 post={item}
+                index={index}
                 onLike={() => likeMutation.mutate(item._id)}
                 onComment={() => setCommentTarget(item)}
               />
@@ -380,7 +387,7 @@ export default function CommunauteScreen() {
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
+  bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -420,9 +427,10 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: Spacing.xl, paddingBottom: 40, gap: 12 },
   // Post card
   card: {
-    backgroundColor: Colors.glassBg, borderWidth: 1,
+    backgroundColor: Colors.glassBg, borderWidth: 1, overflow: 'hidden',
     borderColor: Colors.glassBorder, borderRadius: Radius.xl, padding: 14, gap: 10,
   },
+  accentBar: { position: 'absolute', top: 0, left: 0, right: 0, height: 3 },
   authorRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   authorAvatar: {
     width: 36, height: 36, borderRadius: 18,

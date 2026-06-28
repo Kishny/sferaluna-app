@@ -6,10 +6,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../components/LinearGradient';
+import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, CalendarBlank, MapPin, Users, MoonStars, CheckCircle } from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius } from '../../lib/theme';
+import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
 import { fetchEvents, toggleEventRegistration, LunaEvent } from '../../lib/api';
 import { NP } from '../../components/NP';
 
@@ -24,16 +25,19 @@ function isFuture(iso: string): boolean {
   return new Date(iso).getTime() > Date.now();
 }
 
-function EventCard({ event, onToggle, isPending }: {
+function EventCard({ event, index, onToggle, isPending }: {
   event: LunaEvent;
+  index: number;
   onToggle: () => void;
   isPending: boolean;
 }) {
   const future = isFuture(event.date);
   const full = !!event.capacity && event.registeredCount >= event.capacity && !event.isRegistered;
+  const accent = ACCENT_BARS[index % ACCENT_BARS.length];
 
   return (
     <View style={styles.card}>
+      <LinearGradient colors={accent} style={styles.accentBar} />
       {/* Header gradient */}
       <LinearGradient
         colors={['rgba(124,58,237,0.18)', 'rgba(219,39,119,0.12)']}
@@ -131,6 +135,8 @@ export default function EventsScreen() {
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
+      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
@@ -175,9 +181,10 @@ export default function EventsScreen() {
                 tintColor={Colors.accentPink}
               />
             }
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <EventCard
                 event={item}
+                index={index}
                 onToggle={() => toggleMutation.mutate(item._id)}
                 isPending={toggleMutation.isPending && toggleMutation.variables === item._id}
               />
@@ -190,7 +197,7 @@ export default function EventsScreen() {
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
+  bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -216,6 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.glassBg, borderWidth: 1,
     borderColor: Colors.glassBorder, borderRadius: Radius.xl, overflow: 'hidden',
   },
+  accentBar: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, zIndex: 1 },
   cardHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from '../../components/LinearGradient';
+import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, CaretDown, CaretUp, MoonStars } from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius } from '../../lib/theme';
+import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
 import { NP } from '../../components/NP';
 
 interface FaqItem { q: string; a: string }
@@ -102,14 +103,16 @@ const FAQ: FaqSection[] = [
   },
 ];
 
-function FaqEntry({ item }: { item: FaqItem }) {
+function FaqEntry({ item, index }: { item: FaqItem; index: number }) {
   const [open, setOpen] = useState(false);
+  const accent = ACCENT_BARS[index % ACCENT_BARS.length];
   return (
     <TouchableOpacity
       style={[styles.entry, open && styles.entryOpen]}
       onPress={() => setOpen(!open)}
       activeOpacity={0.85}
     >
+      <LinearGradient colors={accent} style={styles.entryAccent} />
       <View style={styles.entryHeader}>
         <Text style={styles.entryQ}>{item.q}</Text>
         {open ? <CaretUp size={15} color={Colors.accentPink} /> : <CaretDown size={15} color={Colors.textMuted} />}
@@ -120,8 +123,11 @@ function FaqEntry({ item }: { item: FaqItem }) {
 }
 
 export default function FaqScreen() {
+  let entryIndex = -1;
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
+      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
@@ -141,9 +147,10 @@ export default function FaqScreen() {
                 <Text style={styles.sectionEmoji}>{section.emoji}</Text>
                 <Text style={styles.sectionTitle}>{section.title}</Text>
               </View>
-              {section.items.map((item) => (
-                <FaqEntry key={item.q} item={item} />
-              ))}
+              {section.items.map((item) => {
+                entryIndex += 1;
+                return <FaqEntry key={item.q} item={item} index={entryIndex} />;
+              })}
             </View>
           ))}
           <View style={styles.footer}>
@@ -160,7 +167,7 @@ export default function FaqScreen() {
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
+  bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -179,8 +186,9 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
   entry: {
     backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
-    borderRadius: Radius.lg, padding: 14, gap: 10,
+    borderRadius: Radius.lg, padding: 14, paddingLeft: 17, gap: 10, overflow: 'hidden',
   },
+  entryAccent: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 3 },
   entryOpen: { borderColor: 'rgba(219,39,119,0.3)', backgroundColor: 'rgba(219,39,119,0.06)' },
   entryHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   entryQ: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary, lineHeight: 20 },
