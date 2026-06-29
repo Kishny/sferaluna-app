@@ -9,33 +9,31 @@ import { router } from 'expo-router';
 import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
 import { NP } from '../../components/NP';
 
-const TEAM = [
+// L'équipe réelle n'est pas encore publiée — voir équivalent web (src/app/equipe/page.tsx).
+// Cards "pôles" plutôt que profils inventés, en attendant le dévoilement officiel.
+const TEAM_PREVIEW = [
   {
-    initials: 'SL',
-    name: 'Sofia L.',
-    role: 'Fondatrice & CEO',
-    bio: "Passionnée par les relations saines et la technologie bienveillante. Elle a fondé SferaLuna après avoir vécu les limites des applications de rencontre traditionnelles.",
+    emoji: '🌙',
+    title: 'Direction créative',
+    role: 'Vision produit',
     gradient: ['#7C3AED', '#DB2777'] as [string, string],
   },
   {
-    initials: 'MA',
-    name: 'Marie A.',
-    role: 'Directrice Produit',
-    bio: "Ancienne UX researcher spécialisée en psychologie des relations. Elle veille à ce que chaque fonctionnalité serve l'authenticité et la sécurité des membres.",
+    emoji: '🛡️',
+    title: 'Modération',
+    role: 'Sécurité & confiance',
     gradient: ['#6D28D9', '#EC4899'] as [string, string],
   },
   {
-    initials: 'CJ',
-    name: 'Claire J.',
-    role: 'Modération & Sécurité',
-    bio: "Coordinatrice de la sécurité de la communauté. Elle pilote l'équipe de modération et les processus de vérification d'identité pour maintenir la confiance.",
+    emoji: '💻',
+    title: 'Tech & plateforme',
+    role: 'Développement',
     gradient: ['#4C1D95', '#BE185D'] as [string, string],
   },
   {
-    initials: 'NR',
-    name: 'Nina R.',
-    role: 'Community Manager',
-    bio: "Voix et âme de la communauté SferaLuna. Elle anime les espaces VibeSphere, VibeMentor et les événements Luna avec bienveillance et humour.",
+    emoji: '💬',
+    title: 'Expérience membre',
+    role: 'Communauté',
     gradient: ['#5B21B6', '#9D174D'] as [string, string],
   },
 ];
@@ -76,7 +74,7 @@ export default function EquipeScreen() {
           </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Notre équipe</Text>
-            <Text style={styles.subtitle}>Les visages derrière SferaLuna</Text>
+            <Text style={styles.subtitle}>{"L'équipe SferaLuna se dévoilera bientôt"}</Text>
           </View>
         </View>
 
@@ -88,21 +86,26 @@ export default function EquipeScreen() {
           >
             <MoonStars size={22} color={Colors.accentPink} weight="duotone" />
             <Text style={styles.missionText}>
-              SferaLuna est née d'une conviction : les femmes méritent un espace de rencontre qui les respecte, les protège et célèbre leur complexité.
+              Nous construisons une expérience de rencontres plus sûre, plus humaine et plus élégante pour les femmes.
             </Text>
           </LinearGradient>
 
-          {/* Équipe */}
-          <Text style={styles.sectionTitle}>{"L'équipe"}</Text>
-          {TEAM.map((member) => (
-            <View key={member.name} style={styles.memberCard}>
+          {/* Aperçu de l'équipe (pôles, pas de profils inventés) */}
+          <Text style={styles.sectionTitle}>{"Les pôles SferaLuna"}</Text>
+          <Text style={styles.sectionSubtitle}>
+            Les profils réels seront ajoutés plus tard. La structure est déjà prête pour accueillir les futures cards.
+          </Text>
+          {TEAM_PREVIEW.map((member) => (
+            <View key={member.title} style={styles.memberCard}>
               <LinearGradient colors={member.gradient} style={styles.memberAvatar}>
-                <Text style={styles.memberInitials}>{member.initials}</Text>
+                <Text style={styles.memberInitials}>{member.emoji}</Text>
               </LinearGradient>
               <View style={styles.memberInfo}>
-                <Text style={styles.memberName}>{member.name}</Text>
+                <Text style={styles.memberName}>{member.title}</Text>
                 <Text style={styles.memberRole}>{member.role}</Text>
-                <Text style={styles.memberBio}>{member.bio}</Text>
+              </View>
+              <View style={styles.soonBadge}>
+                <Text style={styles.soonBadgeText}>bientôt</Text>
               </View>
             </View>
           ))}
@@ -180,20 +183,25 @@ const styles = StyleSheet.create({
   },
   missionText: { flex: 1, fontSize: 13.5, color: 'rgba(255,255,255,0.85)', lineHeight: 20, fontStyle: 'italic' },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  sectionSubtitle: { fontSize: 12.5, color: Colors.textMuted, lineHeight: 17, marginTop: -8 },
   memberCard: {
-    flexDirection: 'row', gap: 14, alignItems: 'flex-start',
+    flexDirection: 'row', gap: 14, alignItems: 'center',
     backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
     borderRadius: Radius.xl, padding: 14,
   },
   memberAvatar: {
-    width: 52, height: 52, borderRadius: 26,
+    width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
-  memberInitials: { fontSize: 17, fontWeight: '800', color: '#fff' },
+  memberInitials: { fontSize: 18, color: '#fff' },
   memberInfo: { flex: 1, gap: 3 },
   memberName: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
   memberRole: { fontSize: 12, color: Colors.accentPink, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6 },
-  memberBio: { fontSize: 13, color: Colors.textSecondary, lineHeight: 19, marginTop: 4 },
+  soonBadge: {
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full,
+    backgroundColor: 'rgba(219,39,119,0.12)',
+  },
+  soonBadgeText: { fontSize: 10.5, fontWeight: '700', color: Colors.accentPink },
   valuesGrid: { gap: 10 },
   valueCard: {
     backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
