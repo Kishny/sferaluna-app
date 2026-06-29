@@ -161,6 +161,10 @@ export function navigateFromNotification(
 
   if (type === 'new_message' && data.matchId) {
     router.push(`/(app)/chat/${data.matchId}` as any);
+  } else if (type === 'new_match' && data.matchId) {
+    // Cas de la relance "aucun message depuis 24h" (matchId fourni) :
+    // direction la conversation plutôt que la liste, c'est plus actionnable.
+    router.push(`/(app)/chat/${data.matchId}` as any);
   } else if (type === 'new_match') {
     router.push('/(app)/(tabs)/messages' as any);
   } else if (type === 'profile_visit') {

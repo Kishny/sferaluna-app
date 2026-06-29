@@ -362,6 +362,11 @@ export default function ChatScreen() {
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   // Reactions locales : { [messageId]: emoji[] }
   const [reactions, setReactions] = useState<Record<string, string[]>>({});
+  // Indicateur "en train d'écrire…" — événement client Pusher (client-typing),
+  // aucun aller-retour API : repose sur le canal private-match déjà souscrit.
+  const [otherTyping, setOtherTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
 
   const { data: matchesData } = useQuery({
     queryKey: ['messages', 'matches'],
@@ -406,6 +411,9 @@ export default function ChatScreen() {
 
   const handleIncomingMessage = useCallback((incoming: ChatMessage) => {
     hapticLight();
+    // L'arrivée d'un message confirme que l'autre a fini d'écrire.
+    setOtherTyping(false);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     queryClient.setQueryData<typeof messagesData>(['chat', matchId, 'messages'], (prev) => {
       if (!prev) return prev;
       if (prev.messages.some((m) => m._id === incoming._id)) return prev;
@@ -414,12 +422,22 @@ export default function ChatScreen() {
     setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
   }, [queryClient, matchId]);
 
+  // Réception de l'événement client "client-typing" envoyé par l'autre utilisatrice.
+  // Auto-expire après 4s sans nouvel événement (pas de "stop" explicite nécessaire).
+  const handleTypingEvent = useCallback((data: { senderId?: string }) => {
+    if (data?.senderId && data.senderId === currentUserId) return; // sécurité, pusher-js ne renvoie déjà pas l'événement à l'émetteur
+    setOtherTyping(true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 4000);
+  }, [currentUserId]);
+
   useEffect(() => {
     if (!matchId) return;
     const pusher = getPusherClient();
     if (!pusher) return;
     const channel = pusher.subscribe(matchChannelName(matchId));
     channel.bind('new-message', handleIncomingMessage);
+    channel.bind('client-typing', handleTypingEvent);
 
     // Quand l'autre utilisatrice lit nos messages → mettre à jour readAt en cache
     const handleMessagesRead = ({ readAt }: { readerId: string; readAt: string }) => {
@@ -439,10 +457,26 @@ export default function ChatScreen() {
 
     return () => {
       channel.unbind('new-message', handleIncomingMessage);
+      channel.unbind('client-typing', handleTypingEvent);
       channel.unbind('messages-read', handleMessagesRead);
       pusher.unsubscribe(matchChannelName(matchId));
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [matchId, handleIncomingMessage]);
+  }, [matchId, handleIncomingMessage, handleTypingEvent]);
+
+  // Émission de l'événement "client-typing" — débitée à au plus 1 fois / 2.5s
+  // pour éviter de saturer le canal pendant une frappe continue.
+  const sendTypingEvent = useCallback(() => {
+    if (!matchId) return;
+    const pusher = getPusherClient();
+    if (!pusher) return;
+    const channel = pusher.channel(matchChannelName(matchId));
+    if (!channel) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 2500) return;
+    lastTypingSentRef.current = now;
+    channel.trigger('client-typing', { senderId: currentUserId });
+  }, [matchId, currentUserId]);
 
   // Marquer les messages comme lus quand l'écran prend le focus
   useFocusEffect(useCallback(() => {
@@ -691,6 +725,20 @@ export default function ChatScreen() {
             />
           )}
 
+          {/* Indicateur "en train d'écrire…" */}
+          {otherTyping && (
+            <View style={styles.typingRow}>
+              <View style={styles.typingDots}>
+                <View style={styles.typingDot} />
+                <View style={styles.typingDot} />
+                <View style={styles.typingDot} />
+              </View>
+              <Text style={styles.typingText}>
+                {contact?.pseudonyme ?? 'Elle'} est en train d'écrire…
+              </Text>
+            </View>
+          )}
+
           {/* Aperçu de réponse au-dessus de la saisie */}
           {replyTo && (
             <View style={styles.replyBar}>
@@ -721,7 +769,7 @@ export default function ChatScreen() {
               <TextInput
                 style={styles.textInput}
                 value={input}
-                onChangeText={setInput}
+                onChangeText={(text) => { setInput(text); sendTypingEvent(); }}
                 placeholder="Votre message..."
                 placeholderTextColor={Colors.textMuted}
                 multiline
@@ -851,6 +899,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(124,58,237,0.1)',
   },
   replyBarText: { flex: 1, fontSize: 13, color: Colors.textSecondary, fontStyle: 'italic' },
+  // Indicateur de frappe
+  typingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: 6,
+    gap: 8,
+  },
+  typingDots: { flexDirection: 'row', gap: 3 },
+  typingDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: Colors.accentPink,
+    opacity: 0.7,
+  },
+  typingText: { fontSize: 12, color: Colors.textMuted, fontStyle: 'italic' },
   // Barre de saisie
   inputBar: {
     flexDirection: 'row',
