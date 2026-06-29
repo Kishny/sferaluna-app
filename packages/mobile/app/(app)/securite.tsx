@@ -31,6 +31,7 @@ import { fetchMyProfile, createIdentityVerificationSession, requestPasswordReset
 import { getSession, signOut, type AuthProvider } from '../../lib/auth';
 import { ApiError, API_BASE_URL } from '../../lib/http';
 import { Toast, useToast } from '../../components/Toast';
+import { hapticMedium, hapticError } from '../../lib/haptics';
 import {
   isBiometricHardwareAvailable,
   getBiometricLabel,
@@ -246,6 +247,7 @@ export default function AccountSecurityScreen() {
 
       await setBiometricUnlockEnabled(next);
       setBiometricEnabled(next);
+      hapticMedium();
       showToast(
         next ? `Connexion ${biometricLabel} activée` : `Connexion ${biometricLabel} désactivée`,
         'success'
@@ -253,6 +255,7 @@ export default function AccountSecurityScreen() {
     } catch {
       const message = 'Impossible de modifier ce réglage pour le moment.';
       setBiometricError(message);
+      hapticError();
       showToast(message, 'error');
     } finally {
       setBiometricBusy(false);

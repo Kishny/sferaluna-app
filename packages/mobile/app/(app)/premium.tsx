@@ -18,6 +18,7 @@ import { Colors, Spacing, Radius } from '../../lib/theme';
 import { createCheckoutSession } from '../../lib/api';
 import { ApiError, API_BASE_URL } from '../../lib/http';
 import { NP } from '../../components/NP';
+import { hapticLight, hapticMedium, hapticSuccess, hapticError, hapticWarning } from '../../lib/haptics';
 
 /**
  * Le backend redirige toujours vers les pages web (success_url → /mon-compte,
@@ -116,6 +117,7 @@ export default function PremiumScreen() {
    */
   const handleSubscribe = async () => {
     if (loading) return;
+    hapticMedium();
     setLoading(true);
     setError('');
     setInfo('');
@@ -123,6 +125,7 @@ export default function PremiumScreen() {
       const data = await createCheckoutSession(selected);
 
       if (!data?.url) {
+        hapticError();
         setError('Impossible de démarrer le paiement. Réessayez dans un instant.');
         return;
       }
@@ -139,8 +142,10 @@ export default function PremiumScreen() {
           // isPremium est recalculé côté serveur après le webhook Stripe ;
           // on rafraîchit simplement les données affichées dans l'app.
           await queryClient.invalidateQueries();
+          hapticSuccess();
           setInfo('Paiement confirmé ! Votre abonnement est en cours d\'activation — cela peut prendre quelques instants.');
         } else if (status === 'cancelled') {
+          hapticWarning();
           setInfo('Paiement annulé. Vous pouvez réessayer quand vous le souhaitez.');
         } else {
           await queryClient.invalidateQueries();
@@ -148,6 +153,7 @@ export default function PremiumScreen() {
       }
       // type 'cancel' / 'dismiss' : l'utilisatrice a fermé la fenêtre — rien à faire.
     } catch (e) {
+      hapticError();
       if (e instanceof ApiError) {
         setError(e.message ?? 'Impossible de démarrer le paiement. Réessayez dans un instant.');
       } else {
@@ -170,7 +176,7 @@ export default function PremiumScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Close */}
           <View style={styles.closeRow}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
+            <TouchableOpacity onPress={() => { hapticLight(); router.back(); }} style={styles.closeBtn}>
               <NP><X size={20} color={Colors.textSecondary} />
             </NP></TouchableOpacity>
           </View>
@@ -195,7 +201,7 @@ export default function PremiumScreen() {
               return (
                 <TouchableOpacity
                   key={plan.id}
-                  onPress={() => setSelected(plan.id)}
+                  onPress={() => { hapticLight(); setSelected(plan.id); }}
                   activeOpacity={0.8}
                 >
                   <View style={[styles.planCard, isActive && styles.planCardActive]}>

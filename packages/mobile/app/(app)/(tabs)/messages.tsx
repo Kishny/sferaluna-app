@@ -15,6 +15,7 @@ import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMatches, type MatchSummary } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
+import { hapticLight } from '../../../lib/haptics';
 
 const FALLBACK_AVATAR = 'https://i.pravatar.cc/200';
 
@@ -228,7 +229,7 @@ export default function MessagesScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
-              onRefresh={() => refetch()}
+              onRefresh={() => { hapticLight(); refetch(); }}
               tintColor={Colors.accentPink}
               colors={[Colors.accentPink]}
             />

@@ -17,6 +17,7 @@ import {
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { NP } from '../../components/NP';
+import { hapticLight } from '../../lib/haptics';
 
 const FALLBACK = 'https://i.pravatar.cc/200';
 
@@ -261,7 +262,7 @@ export default function VibesphereScreen() {
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()}
+              <RefreshControl refreshing={isRefetching} onRefresh={() => { hapticLight(); refetch(); }}
                 tintColor={Colors.accentPink} colors={[Colors.accentPink]} />
             }
             onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}

@@ -22,7 +22,7 @@ import { fetchMyProfile, updateMyProfile, uploadAvatar, uploadPhoto, deletePhoto
 import { getPlanLabel } from '../../../lib/auth';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
-import { hapticMedium, hapticLight } from '../../../lib/haptics';
+import { hapticMedium, hapticLight, hapticSuccess, hapticError, hapticWarning } from '../../../lib/haptics';
 
 const SUGGESTED_TAGS = ['Littérature', 'Voyages', 'Cuisine', 'Cinéma', 'Musique', 'Sport', 'Art', 'Nature', 'Yoga', 'Méditation'];
 
@@ -181,9 +181,11 @@ export default function ProfileScreen() {
     onSuccess: (res) => {
       if (!res) return;
       setPhotoError(null);
+      hapticSuccess();
       queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
     },
     onError: (e) => {
+      hapticError();
       setPhotoError(e instanceof Error ? e.message : "Échec de l'envoi de la photo.");
     },
   });
@@ -209,8 +211,10 @@ export default function ProfileScreen() {
   };
 
   const handleAddPhoto = async (slotIndex: number) => {
+    hapticLight();
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
+      hapticWarning();
       setPhotoGalleryError("Autorisez l'accès à vos photos pour ajouter une image.");
       return;
     }
@@ -228,8 +232,10 @@ export default function ProfileScreen() {
     setPhotoGalleryError(null);
     try {
       await uploadPhoto({ uri: asset.uri, name, type });
+      hapticSuccess();
       queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
     } catch (e) {
+      hapticError();
       setPhotoGalleryError(e instanceof Error ? e.message : "Échec de l'upload.");
     } finally {
       setUploadingSlot(null);
@@ -237,11 +243,14 @@ export default function ProfileScreen() {
   };
 
   const handleDeletePhoto = async (photoUrl: string) => {
+    hapticWarning();
     setPhotoGalleryError(null);
     try {
       await deletePhoto(photoUrl);
+      hapticMedium();
       queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
     } catch (e) {
+      hapticError();
       setPhotoGalleryError(e instanceof Error ? e.message : "Impossible de supprimer la photo.");
     }
   };

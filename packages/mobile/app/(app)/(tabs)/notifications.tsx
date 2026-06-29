@@ -15,6 +15,7 @@ import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchNotificationsSummary, markNotificationsSeen } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
+import { hapticLight } from '../../../lib/haptics';
 
 const MOON_THOUGHTS_CALM = [
   "Le calme aussi a du charme — profitez-en pour soigner votre profil.",
@@ -167,7 +168,7 @@ export default function NotificationsScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
-              onRefresh={() => refetch()}
+              onRefresh={() => { hapticLight(); refetch(); }}
               tintColor={Colors.accentPink}
               colors={[Colors.accentPink]}
             />

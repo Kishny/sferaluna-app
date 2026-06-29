@@ -18,6 +18,7 @@ import { canUseGhostMode, getPlanLabel, formatFrDate, signOut } from '../../../l
 import { ApiError } from '../../../lib/http';
 import { Toast, useToast } from '../../../components/Toast';
 import { NP } from '../../../components/NP';
+import { hapticMedium, hapticError } from '../../../lib/haptics';
 
 interface SettingItem {
   id: string;
@@ -132,6 +133,7 @@ export default function SettingsScreen() {
     onSuccess: (_data, next) => {
       setVisibilityError('');
       queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
+      hapticMedium();
       showToast(
         next === 'invisible' ? 'Mode Fantôme activé 👻' : 'Mode Fantôme désactivé',
         'success'
@@ -143,6 +145,7 @@ export default function SettingsScreen() {
           ? e.message
           : 'Impossible de modifier la visibilité pour le moment.';
       setVisibilityError(message);
+      hapticError();
       showToast(message, 'error');
     },
   });
@@ -169,6 +172,7 @@ export default function SettingsScreen() {
           type: 'toggle',
           value: notifications,
           onToggle: (v: boolean) => {
+            hapticMedium();
             setNotifications(v);
             showToast(v ? 'Notifications push activées' : 'Notifications push désactivées', 'success');
           },
@@ -182,6 +186,7 @@ export default function SettingsScreen() {
           type: 'toggle',
           value: matches,
           onToggle: (v: boolean) => {
+            hapticMedium();
             setMatches(v);
             showToast(v ? 'Alertes nouveaux matchs activées' : 'Alertes nouveaux matchs désactivées', 'success');
           },
