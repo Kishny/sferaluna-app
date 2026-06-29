@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Image, ActivityIndicator, ScrollView,
+  ActivityIndicator, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -15,8 +15,7 @@ import { fetchCircle, likeProfile, type CircleProfile } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { NP } from '../../components/NP';
-
-const FALLBACK = 'https://i.pravatar.cc/200';
+import { AvatarPlaceholder } from '../../components/AvatarPlaceholder';
 
 function formatWeekOf(iso: string): string {
   const d = new Date(iso);
@@ -41,10 +40,7 @@ function CircleCard({ profile, index }: { profile: CircleProfile; index: number 
         style={styles.cardHalo}
       >
         <View style={styles.cardAvatarWrap}>
-          <Image
-            source={{ uri: profile.image || FALLBACK }}
-            style={styles.cardAvatar}
-          />
+          <AvatarPlaceholder uri={profile.image} name={profile.pseudonyme} size={72} />
         </View>
       </LinearGradient>
 

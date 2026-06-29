@@ -11,7 +11,6 @@ import { NP } from './NP';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
 const ROTATION_RANGE = 10;
-const FALLBACK_IMAGE = 'https://i.pravatar.cc/400';
 
 /** Une utilisatrice est considérée "active récemment" si son profil a bougé
  * dans les dernières 24h — un signal chaleureux qui invite à engager la conversation. */
@@ -27,7 +26,15 @@ function CardContent({ profile }: { profile: PublicProfile }) {
 
   return (
     <>
-      <Image source={{ uri: profile.image || FALLBACK_IMAGE }} style={styles.image} />
+      {profile.image ? (
+        <Image source={{ uri: profile.image }} style={styles.image} />
+      ) : (
+        <LinearGradient colors={[Colors.accentPurple, Colors.accentPink]} style={styles.imageFallback}>
+          <Text style={styles.imageFallbackInitial}>
+            {profile.pseudonyme?.[0]?.toUpperCase() ?? '?'}
+          </Text>
+        </LinearGradient>
+      )}
       <LinearGradient colors={['transparent', 'rgba(26,11,46,0.96)']} style={styles.gradient}>
         <View style={styles.info}>
           <View style={styles.nameRow}>
@@ -229,6 +236,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  imageFallback: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageFallbackInitial: {
+    fontSize: 84,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.85)',
   },
   gradient: {
     position: 'absolute',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, Image,
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, TextInput, Modal, RefreshControl,
   KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
@@ -20,8 +20,7 @@ import {
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { NP } from '../../components/NP';
-
-const FALLBACK = 'https://i.pravatar.cc/200';
+import { AvatarPlaceholder } from '../../components/AvatarPlaceholder';
 
 function timeAgo(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -58,7 +57,7 @@ function MentorCard({
     <View style={styles.card}>
       {/* Auteur + catégorie */}
       <View style={styles.cardHeader}>
-        <Image source={{ uri: (post.userId as any)?.image || FALLBACK }} style={styles.avatar} />
+        <AvatarPlaceholder uri={(post.userId as any)?.image} name={(post.userId as any)?.pseudonyme} size={38} />
         <View style={{ flex: 1 }}>
           <Text style={styles.authorName} numberOfLines={1}>{(post.userId as any)?.pseudonyme ?? '—'}</Text>
           <Text style={styles.postTime}>{timeAgo(post.createdAt)}</Text>
@@ -102,7 +101,7 @@ function MentorCard({
         <View style={styles.answersSection}>
           {topAnswers.map((ans) => (
             <View key={ans._id} style={[styles.answerRow, ans.isAccepted && styles.answerAccepted]}>
-              <Image source={{ uri: (ans.userId as any)?.image || FALLBACK }} style={styles.answerAvatar} />
+              <AvatarPlaceholder uri={(ans.userId as any)?.image} name={(ans.userId as any)?.pseudonyme} size={30} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.answerAuthor}>{(ans.userId as any)?.pseudonyme ?? '—'}</Text>
                 <Text style={styles.answerContent}>{ans.content}</Text>

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Image, TextInput, ActivityIndicator, Animated, RefreshControl,
+  TextInput, ActivityIndicator, Animated, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -15,9 +15,8 @@ import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMatches, type MatchSummary } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
+import { AvatarPlaceholder } from '../../../components/AvatarPlaceholder';
 import { hapticLight } from '../../../lib/haptics';
-
-const FALLBACK_AVATAR = 'https://i.pravatar.cc/200';
 
 /** Formate une date ISO en repère relatif court (14:32, Hier, Lun., …). */
 function formatRelativeTime(iso: string | null): string {
@@ -60,8 +59,8 @@ function Pressy({
 /** Avatar cerclé d'un halo dégradé (signature visuelle "lunaire" de la marque)
  * + badge de vérification d'identité — renforce le sentiment de sécurité. */
 function HaloAvatar({
-  uri, size, verified, ringWidth = 2.5,
-}: { uri?: string; size: number; verified?: boolean; ringWidth?: number }) {
+  uri, name, size, verified, ringWidth = 2.5,
+}: { uri?: string; name?: string; size: number; verified?: boolean; ringWidth?: number }) {
   const innerSize = size - ringWidth * 2;
   return (
     <View style={{ width: size, height: size }}>
@@ -70,10 +69,7 @@ function HaloAvatar({
         style={[styles.halo, { width: size, height: size, borderRadius: size / 2, padding: ringWidth }]}
       >
         <View style={[styles.haloInner, { width: innerSize, height: innerSize, borderRadius: innerSize / 2 }]}>
-          <Image
-            source={{ uri: uri || FALLBACK_AVATAR }}
-            style={{ width: innerSize, height: innerSize, borderRadius: innerSize / 2 }}
-          />
+          <AvatarPlaceholder uri={uri} name={name} size={innerSize} />
         </View>
       </LinearGradient>
       {verified && (
@@ -202,7 +198,7 @@ export default function MessagesScreen() {
               renderItem={({ item }) => (
                 <Pressy style={styles.matchItem} onPress={() => router.push(`/(app)/chat/${item.matchId}`)}>
                   <View style={{ alignItems: 'center' }}>
-                    <HaloAvatar uri={item.user.image} size={66} verified={item.user.identityVerified} />
+                    <HaloAvatar uri={item.user.image} name={item.user.pseudonyme} size={66} verified={item.user.identityVerified} />
                     <Text style={styles.matchName} numberOfLines={1}>{item.user.pseudonyme}</Text>
                     <View style={styles.newPill}>
                       <Text style={styles.newPillText}>Dites bonjour</Text>
@@ -264,7 +260,7 @@ export default function MessagesScreen() {
             return (
               <Pressy style={styles.convItem} onPress={() => router.push(`/(app)/chat/${item.matchId}`)}>
                 <View style={styles.convRow}>
-                  <HaloAvatar uri={item.user.image} size={56} verified={item.user.identityVerified} ringWidth={2} />
+                  <HaloAvatar uri={item.user.image} name={item.user.pseudonyme} size={56} verified={item.user.identityVerified} ringWidth={2} />
                   <View style={styles.convContent}>
                     <View style={styles.convTop}>
                       <Text style={styles.convName} numberOfLines={1}>{item.user.pseudonyme}</Text>

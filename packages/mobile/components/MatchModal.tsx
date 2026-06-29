@@ -1,15 +1,14 @@
 import React from 'react';
 import {
-  Modal, View, Text, StyleSheet, Image, TouchableOpacity,
+  Modal, View, Text, StyleSheet, TouchableOpacity,
 } from 'react-native';
 import { ChatCircleDots, Sparkle, X } from 'phosphor-react-native';
 import { LinearGradient } from './LinearGradient';
 import { GradientButton } from './GradientButton';
+import { AvatarPlaceholder } from './AvatarPlaceholder';
 import { Colors, Spacing, Radius } from '../lib/theme';
 import { NP } from '../components/NP';
 import { hapticLight } from '../lib/haptics';
-
-const FALLBACK_IMAGE = 'https://i.pravatar.cc/400';
 
 interface Props {
   visible: boolean;
@@ -55,13 +54,13 @@ export function MatchModal({
 
           <View style={styles.avatarsRow}>
             <View style={[styles.avatarRing, styles.avatarLeft]}>
-              <Image source={{ uri: myImage || FALLBACK_IMAGE }} style={styles.avatar} />
+              <AvatarPlaceholder uri={myImage} size={86} />
             </View>
             <View style={styles.heartBadge}>
               <Text style={styles.heartEmoji}>💫</Text>
             </View>
             <View style={[styles.avatarRing, styles.avatarRight]}>
-              <Image source={{ uri: matchImage || FALLBACK_IMAGE }} style={styles.avatar} />
+              <AvatarPlaceholder uri={matchImage} name={matchName} size={86} />
             </View>
           </View>
 

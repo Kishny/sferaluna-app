@@ -22,6 +22,7 @@ import { fetchMyProfile, updateMyProfile, uploadAvatar, uploadPhoto, deletePhoto
 import { getPlanLabel } from '../../../lib/auth';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
+import { AvatarPlaceholder } from '../../../components/AvatarPlaceholder';
 import { hapticMedium, hapticLight, hapticSuccess, hapticError, hapticWarning } from '../../../lib/haptics';
 
 const SUGGESTED_TAGS = ['Littérature', 'Voyages', 'Cuisine', 'Cinéma', 'Musique', 'Sport', 'Art', 'Nature', 'Yoga', 'Méditation'];
@@ -355,10 +356,7 @@ export default function ProfileScreen() {
                 end={{ x: 1, y: 1 }}
                 style={styles.avatarRing}
               >
-                <Image
-                  source={{ uri: avatarUri || 'https://i.pravatar.cc/200' }}
-                  style={styles.avatar}
-                />
+                <AvatarPlaceholder uri={avatarUri} name={pseudonyme} size={AVATAR_SIZE} />
               </LinearGradient>
 
               {identityVerified && (

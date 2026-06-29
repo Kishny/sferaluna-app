@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, Image,
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, TextInput, Modal, RefreshControl,
   KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
@@ -18,8 +18,7 @@ import {
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { NP } from '../../components/NP';
-
-const FALLBACK = 'https://i.pravatar.cc/200';
+import { AvatarPlaceholder } from '../../components/AvatarPlaceholder';
 
 function formatDate(iso?: string | null): string {
   if (!iso) return '';
@@ -61,9 +60,10 @@ function PlanCard({ plan }: { plan: VibePlan }) {
         <View style={{ flex: 1 }}>
           <Text style={styles.planTitle} numberOfLines={1}>{plan.title}</Text>
           <View style={styles.proposedRow}>
-            <Image
-              source={{ uri: (plan.proposedById as any)?.image || FALLBACK }}
-              style={styles.proposerAvatar}
+            <AvatarPlaceholder
+              uri={(plan.proposedById as any)?.image}
+              name={(plan.proposedById as any)?.pseudonyme}
+              size={20}
             />
             <Text style={styles.proposerName} numberOfLines={1}>
               {(plan.proposedById as any)?.pseudonyme ?? '—'}
@@ -176,7 +176,7 @@ function NewPlanModal({ visible, onClose }: { visible: boolean; onClose: () => v
                     onPress={() => setMatchId(m.matchId)}
                     activeOpacity={0.8}
                   >
-                    <Image source={{ uri: m.user?.image || FALLBACK }} style={styles.matchChipAvatar} />
+                    <AvatarPlaceholder uri={m.user?.image} name={m.user?.pseudonyme} size={24} />
                     <Text style={[styles.matchChipName, matchId === m.matchId && { color: Colors.accentPink }]}>
                       {m.user?.pseudonyme}
                     </Text>

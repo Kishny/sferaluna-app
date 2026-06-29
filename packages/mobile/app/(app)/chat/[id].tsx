@@ -21,6 +21,7 @@ import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
 import { hapticLight, hapticMedium, hapticWarning } from '../../../lib/haptics';
 import { NP } from '../../../components/NP';
+import { AvatarPlaceholder } from '../../../components/AvatarPlaceholder';
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
@@ -290,7 +291,7 @@ function SwipeableMessage({ item, fromMe, isLast, contact, reactions, onLongPres
     <View style={[styles.messageRow, fromMe && styles.messageRowMe]}>
       {!fromMe && (
         <TouchableOpacity onPress={() => { hapticLight(); router.push(`/(app)/profil/${contact?._id ?? contact?.pseudonyme}` as any); }}>
-          <Image source={{ uri: contact?.image || 'https://i.pravatar.cc/100' }} style={styles.msgAvatar} />
+          <AvatarPlaceholder uri={contact?.image} name={contact?.pseudonyme} size={28} />
         </TouchableOpacity>
       )}
 
@@ -665,10 +666,7 @@ export default function ChatScreen() {
             }}
           >
             <View style={styles.avatarWrapper}>
-              <Image
-                source={{ uri: contact?.image || 'https://i.pravatar.cc/100' }}
-                style={styles.avatar}
-              />
+              <AvatarPlaceholder uri={contact?.image} name={contact?.pseudonyme} size={40} />
               <View style={styles.onlineDot} />
             </View>
             <View>

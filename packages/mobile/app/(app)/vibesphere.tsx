@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, Image,
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, TextInput, Modal, Animated, RefreshControl, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,9 +17,8 @@ import {
 } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { NP } from '../../components/NP';
+import { AvatarPlaceholder } from '../../components/AvatarPlaceholder';
 import { hapticLight } from '../../lib/haptics';
-
-const FALLBACK = 'https://i.pravatar.cc/200';
 
 function timeAgo(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -66,9 +65,10 @@ function VibeCard({ post }: { post: VibePost }) {
     <View style={styles.postCard}>
       <View style={styles.postHeader}>
         <View style={[styles.moodStrip, { backgroundColor: moodColor }]} />
-        <Image
-          source={{ uri: (post.userId as any)?.image || FALLBACK }}
-          style={styles.postAvatar}
+        <AvatarPlaceholder
+          uri={(post.userId as any)?.image}
+          name={(post.userId as any)?.pseudonyme}
+          size={40}
         />
         <View style={{ flex: 1 }}>
           <View style={styles.postAuthorRow}>
