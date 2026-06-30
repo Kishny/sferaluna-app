@@ -3,7 +3,6 @@ import { Slot, useRouter } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import { OneDollarStatsProvider } from "../lib/analytics";
 import {
   registerForPushNotifications,
   setupNotificationHandlers,
@@ -12,7 +11,6 @@ import {
 } from "../lib/notifications";
 // @ts-ignore
 import * as Notifications from 'expo-notifications';
-import appJson from "../app.json";
 
 // ── Gestionnaire global d'erreurs JS fatales ──────────────────────────────
 // Intercepte les erreurs JS non-catchées AVANT qu'expo-updates ne les reçoive
@@ -54,9 +52,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const applicationId = appJson.expo.extra.applicationId ?? "";
-const hostname = applicationId ? `${applicationId}-mobile` : "localhost";
 
 export default function RootLayout() {
   const router = useRouter();
@@ -106,20 +101,11 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      {/* Runable analytics provider — do not remove, required for analytics tracking */}
-      <OneDollarStatsProvider
-        config={{
-          hostname,
-          collectorUrl: "https://r.lilstts.com/events",
-          devmode: true,
-        }}
-      >
-        <SafeAreaProvider>
-          <QueryClientProvider client={queryClient}>
-            <Slot />
-          </QueryClientProvider>
-        </SafeAreaProvider>
-      </OneDollarStatsProvider>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <Slot />
+        </QueryClientProvider>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }

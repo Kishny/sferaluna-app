@@ -118,18 +118,36 @@ export class ErrorBoundary extends Component<Props, State> {
     // Affiche un écran de récupération simple plutôt que de laisser l'erreur
     // se propager au layer natif et crasher via expo-updates errorRecoveryQueue.
     if (Platform.OS !== "web") {
+      const err = errors[0];
+      // Tronque la stack JS à ~300 chars pour tenir à l'écran
+      const stackSnippet = err?.stack
+        ? err.stack.slice(0, 300) + (err.stack.length > 300 ? '…' : '')
+        : null;
+      // Les 4 premières lignes de la componentStack React
+      const componentSnippet = err?.componentStack
+        ? err.componentStack.trim().split('\n').slice(0, 6).join('\n')
+        : null;
       return (
         <SafeAreaView style={s.nativeScreen}>
-          <View style={s.nativeContent}>
+          <ScrollView contentContainerStyle={s.nativeContent}>
             <Text style={s.nativeSadFace}>🌙</Text>
             <Text style={s.nativeTitle}>Une erreur s'est produite</Text>
-            <Text style={s.nativeMessage} numberOfLines={4}>
-              {errors[0]?.message ?? "Erreur inconnue"}
+            <Text style={s.nativeMessage}>
+              {err?.message ?? "Erreur inconnue"}
             </Text>
+            {stackSnippet ? (
+              <Text style={s.nativeStack}>{stackSnippet}</Text>
+            ) : null}
+            {componentSnippet ? (
+              <>
+                <Text style={s.nativeStackLabel}>Composant :</Text>
+                <Text style={s.nativeStack}>{componentSnippet}</Text>
+              </>
+            ) : null}
             <TouchableOpacity style={s.nativeBtn} onPress={this.retry} activeOpacity={0.8}>
               <Text style={s.nativeBtnText}>Réessayer</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </SafeAreaView>
       );
     }
@@ -392,13 +410,11 @@ const s = StyleSheet.create({
   nativeScreen: {
     flex: 1,
     backgroundColor: "#1a0b2e",
-    alignItems: "center",
-    justifyContent: "center",
   },
   nativeContent: {
     alignItems: "center",
-    paddingHorizontal: 32,
-    maxWidth: 360,
+    paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   nativeSadFace: {
     fontSize: 56,
@@ -416,13 +432,32 @@ const s = StyleSheet.create({
     color: "#a78bfa",
     textAlign: "center",
     lineHeight: 20,
-    marginBottom: 32,
+    marginBottom: 16,
+  },
+  nativeStackLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#666",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    alignSelf: "flex-start",
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  nativeStack: {
+    fontSize: 10,
+    color: "#888",
+    fontFamily: "Courier",
+    lineHeight: 14,
+    alignSelf: "stretch",
+    marginBottom: 8,
   },
   nativeBtn: {
     backgroundColor: "#7c3aed",
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 40,
+    marginTop: 24,
   },
   nativeBtnText: {
     color: "#ffffff",
