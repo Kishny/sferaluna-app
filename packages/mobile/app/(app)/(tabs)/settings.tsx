@@ -202,7 +202,7 @@ export default function SettingsScreen() {
               id: 'invisible',
               label: 'Mode Fantôme',
               description: 'Naviguez sans laisser de trace de visite.',
-              icon: <Eye size={18} color="#fff" weight="duotone" />,
+              icon: <Eye size={18} color="#fff" weight="regular" />,
               iconGradient: [Colors.bgSurface, Colors.mutedPurple] as const,
               type: 'toggle',
               value: isInvisible,
@@ -212,7 +212,7 @@ export default function SettingsScreen() {
               id: 'invisible',
               label: 'Mode Fantôme',
               description: 'Réservé aux abonnements Premium et Elite.',
-              icon: <Eye size={18} color={Colors.textMuted} weight="duotone" />,
+              icon: <Eye size={18} color={Colors.textMuted} weight="regular" />,
               type: 'locked',
               onPress: () => router.push('/(app)/premium'),
             },
@@ -220,7 +220,7 @@ export default function SettingsScreen() {
           id: 'privacy',
           label: 'Politique de confidentialité',
           description: 'Vos données, vos droits — RGPD et transparence.',
-          icon: <ShieldCheck size={18} color={Colors.mutedPurple} weight="duotone" />,
+          icon: <ShieldCheck size={18} color={Colors.mutedPurple} weight="regular" />,
           type: 'chevron',
           onPress: () => router.push('/(app)/confidentialite'),
         },
@@ -228,7 +228,7 @@ export default function SettingsScreen() {
           id: 'security',
           label: 'Sécurité du compte',
           description: 'Connexion biométrique, vérification d’identité…',
-          icon: <Lock size={18} color={Colors.mutedPurple} weight="duotone" />,
+          icon: <Lock size={18} color={Colors.mutedPurple} weight="regular" />,
           type: 'chevron',
           onPress: () => router.push('/(app)/securite'),
         },
@@ -283,7 +283,7 @@ export default function SettingsScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <MoonStars size={20} color={Colors.accentPink} weight="duotone" />
+              <MoonStars size={20} color={Colors.accentPink} weight="regular" />
               <Text style={styles.title}>Réglages</Text>
             </View>
             {pseudonyme && (
@@ -399,7 +399,7 @@ export default function SettingsScreen() {
             ) : null}
 
             <View style={styles.footer}>
-              <MoonStars size={14} color={Colors.textMuted} weight="duotone" />
+              <MoonStars size={14} color={Colors.textMuted} weight="regular" />
               <Text style={styles.version}>SferaLuna · v1.0.0</Text>
             </View>
           </View>

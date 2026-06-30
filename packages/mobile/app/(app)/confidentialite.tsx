@@ -102,7 +102,7 @@ export default function PrivacyPolicyScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
           <View style={styles.intro}>
             <View style={styles.introIcon}>
-              <ShieldCheck size={26} color={Colors.accentPurple} weight="duotone" />
+              <ShieldCheck size={26} color={Colors.accentPurple} weight="regular" />
             </View>
             <Text style={styles.introTitle}>Vos données, vos droits</Text>
             <Text style={styles.introText}>

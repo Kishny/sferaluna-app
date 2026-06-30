@@ -136,7 +136,7 @@ export default function NotificationsScreen() {
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <View style={styles.titleLeft}>
-              <BellRinging size={20} color={Colors.accentPink} weight="duotone" />
+              <BellRinging size={20} color={Colors.accentPink} weight="regular" />
               <Text style={styles.title}>Alertes</Text>
             </View>
             {total > 0 && (
@@ -228,7 +228,7 @@ export default function NotificationsScreen() {
                         <Text style={styles.cardBadgeText}>{card.count}</Text>
                       </View>
                     ) : (
-                      <SealCheck size={18} color={Colors.textMuted} weight="duotone" />
+                      <SealCheck size={18} color={Colors.textMuted} weight="regular" />
                     )}
                   </View>
                 </Pressy>
@@ -238,7 +238,7 @@ export default function NotificationsScreen() {
 
           {!isLoading && !isError && (
             <View style={styles.footnote}>
-              <MoonStars size={13} color={Colors.textMuted} weight="duotone" />
+              <MoonStars size={13} color={Colors.textMuted} weight="regular" />
               <Text style={styles.footnoteText}>
                 Les alertes se basent sur votre dernière visite — glissez vers le bas pour actualiser.
               </Text>

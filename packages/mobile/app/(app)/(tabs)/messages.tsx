@@ -153,7 +153,7 @@ export default function MessagesScreen() {
         {/* En-tête */}
         <View style={styles.header}>
           <View style={styles.titleRow}>
-            <MoonStars size={20} color={Colors.accentPink} weight="duotone" />
+            <MoonStars size={20} color={Colors.accentPink} weight="regular" />
             <Text style={styles.title}>Messages</Text>
           </View>
           <Text style={styles.subtitle}>

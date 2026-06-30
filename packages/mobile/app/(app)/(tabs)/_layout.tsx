@@ -27,7 +27,7 @@ function makeTabIcon(Icon: React.ComponentType<any>) {
 
     return (
       <Animated.View style={{ transform: [{ scale }] }} pointerEvents="none">
-        <Icon size={size} color={color} weight="duotone" />
+        <Icon size={size} color={color} weight="regular" />
       </Animated.View>
     );
   };

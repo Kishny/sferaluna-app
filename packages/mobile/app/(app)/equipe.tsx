@@ -84,7 +84,7 @@ export default function EquipeScreen() {
             colors={['rgba(124,58,237,0.18)', 'rgba(219,39,119,0.14)']}
             style={styles.missionBanner}
           >
-            <MoonStars size={22} color={Colors.accentPink} weight="duotone" />
+            <MoonStars size={22} color={Colors.accentPink} weight="regular" />
             <Text style={styles.missionText}>
               Nous construisons une expérience de rencontres plus sûre, plus humaine et plus élégante pour les femmes.
             </Text>
@@ -134,12 +134,12 @@ export default function EquipeScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <ShieldCheck size={20} color={Colors.accentPink} weight="duotone" />
+              <ShieldCheck size={20} color={Colors.accentPink} weight="regular" />
               <Text style={styles.statLabel}>Vérification identité</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <NP><Heart size={20} color={Colors.accentPink} weight="duotone" />
+              <NP><Heart size={20} color={Colors.accentPink} weight="regular" />
               </NP><Text style={styles.statLabel}>Communauté bienveillante</Text>
             </View>
           </LinearGradient>
@@ -152,7 +152,7 @@ export default function EquipeScreen() {
               onPress={() => router.push('/(app)/contact' as any)}
               activeOpacity={0.85}
             >
-              <NP><EnvelopeSimple size={15} color={Colors.accentPink} weight="duotone" />
+              <NP><EnvelopeSimple size={15} color={Colors.accentPink} weight="regular" />
               </NP><Text style={styles.contactBtnText}>Nous contacter</Text>
             </TouchableOpacity>
           </View>

@@ -75,16 +75,16 @@ function ChatMenu({ visible, onClose, contactName, onReport, onDelete, onMute, o
   const menuItems = showMuteOptions
     ? MUTE_OPTIONS.map((opt) => ({
         label: opt.label,
-        icon: <BellSlash size={20} color={Colors.textSecondary} weight="duotone" />,
+        icon: <BellSlash size={20} color={Colors.textSecondary} weight="regular" />,
         onPress: () => { onMute(opt.value); onClose(); },
         danger: false,
       }))
     : [
-        { label: 'Mettre en sourdine', icon: <BellSlash size={20} color={Colors.textSecondary} weight="duotone" />, onPress: () => setShowMuteOptions(true), danger: false },
-        { label: 'Archiver', icon: <Archive size={20} color={Colors.textSecondary} weight="duotone" />, onPress: () => { onArchive(); onClose(); }, danger: false },
-        { label: 'Signaler', icon: <Warning size={20} color="#f59e0b" weight="duotone" />, onPress: () => { onReport(); onClose(); }, danger: false },
-        { label: 'Bloquer', icon: <Prohibit size={20} color="#ef4444" weight="duotone" />, onPress: () => { onBlock(); onClose(); }, danger: true },
-        { label: 'Supprimer la conversation', icon: <Trash size={20} color="#ef4444" weight="duotone" />, onPress: () => { onDelete(); onClose(); }, danger: true },
+        { label: 'Mettre en sourdine', icon: <BellSlash size={20} color={Colors.textSecondary} weight="regular" />, onPress: () => setShowMuteOptions(true), danger: false },
+        { label: 'Archiver', icon: <Archive size={20} color={Colors.textSecondary} weight="regular" />, onPress: () => { onArchive(); onClose(); }, danger: false },
+        { label: 'Signaler', icon: <Warning size={20} color="#f59e0b" weight="regular" />, onPress: () => { onReport(); onClose(); }, danger: false },
+        { label: 'Bloquer', icon: <Prohibit size={20} color="#ef4444" weight="regular" />, onPress: () => { onBlock(); onClose(); }, danger: true },
+        { label: 'Supprimer la conversation', icon: <Trash size={20} color="#ef4444" weight="regular" />, onPress: () => { onDelete(); onClose(); }, danger: true },
       ];
 
   return (
@@ -175,9 +175,9 @@ function MsgActions({ visible, message, fromMe, onClose, onReply, onReact, onCop
 
         {/* Actions */}
         {[
-          { label: 'Répondre', icon: <ArrowBendUpLeft size={20} color={Colors.textSecondary} weight="duotone" />, onPress: () => { onReply(message); onClose(); }, danger: false },
-          { label: 'Copier', icon: <File size={20} color={Colors.textSecondary} weight="duotone" />, onPress: () => { onCopy(message); onClose(); }, danger: false },
-          ...(!fromMe ? [{ label: 'Signaler ce message', icon: <Warning size={20} color="#f59e0b" weight="duotone" />, onPress: () => { onReport(message); onClose(); }, danger: false }] : []),
+          { label: 'Répondre', icon: <ArrowBendUpLeft size={20} color={Colors.textSecondary} weight="regular" />, onPress: () => { onReply(message); onClose(); }, danger: false },
+          { label: 'Copier', icon: <File size={20} color={Colors.textSecondary} weight="regular" />, onPress: () => { onCopy(message); onClose(); }, danger: false },
+          ...(!fromMe ? [{ label: 'Signaler ce message', icon: <Warning size={20} color="#f59e0b" weight="regular" />, onPress: () => { onReport(message); onClose(); }, danger: false }] : []),
         ].map((item, i, arr) => (
           <TouchableOpacity
             key={i}
@@ -754,13 +754,13 @@ export default function ChatScreen() {
           <View style={styles.inputBar}>
             {/* Emoji */}
             <TouchableOpacity style={styles.attachBtn} onPress={() => { hapticLight(); setEmojiPickerVisible(true); }}>
-              <NP><Smiley size={22} color={Colors.textSecondary} weight="duotone" /></NP>
+              <NP><Smiley size={22} color={Colors.textSecondary} weight="regular" /></NP>
             </TouchableOpacity>
             {/* Image */}
             <TouchableOpacity style={styles.attachBtn} onPress={handlePickImage} disabled={uploadingImage}>
               {uploadingImage
                 ? <ActivityIndicator size="small" color={Colors.accentPink} />
-                : <NP><ImageIcon size={22} color={Colors.textSecondary} weight="duotone" /></NP>}
+                : <NP><ImageIcon size={22} color={Colors.textSecondary} weight="regular" /></NP>}
             </TouchableOpacity>
 
             <View style={styles.inputWrapper}>

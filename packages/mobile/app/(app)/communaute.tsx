@@ -341,7 +341,7 @@ export default function CommunauteScreen() {
           </View>
         ) : posts.length === 0 ? (
           <View style={styles.centerState}>
-            <MoonStars size={40} color={Colors.textMuted} weight="duotone" />
+            <MoonStars size={40} color={Colors.textMuted} weight="regular" />
             <Text style={styles.emptyTitle}>Aucun post dans cette catégorie</Text>
             <Text style={styles.emptyText}>Soyez la première à partager !</Text>
             <TouchableOpacity style={styles.createFirstBtn} onPress={() => setShowCreate(true)} activeOpacity={0.85}>

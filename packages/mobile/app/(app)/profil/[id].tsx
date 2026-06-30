@@ -205,7 +205,7 @@ export default function PublicProfileScreen() {
           </Text>
           {city && (
             <View style={styles.cityRow}>
-              <MapPin size={13} color={Colors.textMuted} weight="duotone" />
+              <MapPin size={13} color={Colors.textMuted} weight="regular" />
               <Text style={styles.cityText}>{city}</Text>
             </View>
           )}
@@ -247,7 +247,7 @@ export default function PublicProfileScreen() {
           {intentions.length > 0 && (
             <View style={styles.card}>
               <View style={styles.cardTitleRow}>
-                <Sparkle size={14} color={Colors.accentPink} weight="duotone" />
+                <Sparkle size={14} color={Colors.accentPink} weight="regular" />
                 <Text style={styles.cardTitle}>Je recherche</Text>
               </View>
               <View style={styles.tagRow}>
@@ -264,7 +264,7 @@ export default function PublicProfileScreen() {
           {!!bio && (
             <View style={styles.card}>
               <View style={styles.cardTitleRow}>
-                <MoonStars size={14} color={Colors.accentPink} weight="duotone" />
+                <MoonStars size={14} color={Colors.accentPink} weight="regular" />
                 <Text style={styles.cardTitle}>À propos</Text>
               </View>
               <Text style={styles.bioText}>{bio}</Text>
@@ -287,7 +287,7 @@ export default function PublicProfileScreen() {
           {tags.length > 0 && (
             <View style={styles.card}>
               <View style={styles.cardTitleRow}>
-                <NP><Heart size={14} color={Colors.accentPink} weight="duotone" />
+                <NP><Heart size={14} color={Colors.accentPink} weight="regular" />
                 </NP><Text style={styles.cardTitle}>Centres d'intérêt</Text>
               </View>
               <View style={styles.tagRow}>

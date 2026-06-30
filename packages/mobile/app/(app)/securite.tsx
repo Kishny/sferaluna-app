@@ -286,7 +286,7 @@ export default function AccountSecurityScreen() {
           <GlassCard style={styles.card}>
             <View style={styles.unavailableRow}>
               <View style={styles.iconWrapper}>
-                <Envelope size={20} color={Colors.mutedPurple} weight="duotone" />
+                <Envelope size={20} color={Colors.mutedPurple} weight="regular" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.itemLabel}>Méthode de connexion</Text>
@@ -309,7 +309,7 @@ export default function AccountSecurityScreen() {
               >
                 <View style={styles.itemLeft}>
                   <View style={styles.iconWrapper}>
-                    <Key size={20} color={Colors.mutedPurple} weight="duotone" />
+                    <Key size={20} color={Colors.mutedPurple} weight="regular" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.itemLabel}>Changer le mot de passe</Text>
@@ -331,7 +331,7 @@ export default function AccountSecurityScreen() {
               <View style={styles.item}>
                 <View style={styles.itemLeft}>
                   <View style={styles.iconWrapper}>
-                    <Fingerprint size={20} color={Colors.mutedPurple} weight="duotone" />
+                    <Fingerprint size={20} color={Colors.mutedPurple} weight="regular" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.itemLabel}>Connexion {biometricLabel}</Text>
@@ -355,7 +355,7 @@ export default function AccountSecurityScreen() {
             <GlassCard style={styles.card}>
               <View style={styles.unavailableRow}>
                 <View style={styles.iconWrapper}>
-                  <Fingerprint size={20} color={Colors.textMuted} weight="duotone" />
+                  <Fingerprint size={20} color={Colors.textMuted} weight="regular" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemLabel}>Connexion biométrique</Text>
@@ -375,9 +375,9 @@ export default function AccountSecurityScreen() {
             <View style={styles.unavailableRow}>
               <View style={styles.iconWrapper}>
                 {identityVerified ? (
-                  <ShieldCheck size={20} color={Colors.success} weight="duotone" />
+                  <ShieldCheck size={20} color={Colors.success} weight="regular" />
                 ) : (
-                  <ShieldWarning size={20} color={Colors.warning} weight="duotone" />
+                  <ShieldWarning size={20} color={Colors.warning} weight="regular" />
                 )}
               </View>
               <View style={{ flex: 1 }}>
@@ -432,8 +432,8 @@ export default function AccountSecurityScreen() {
                 <View style={[styles.iconWrapper, styles.iconWrapperDanger]}>
                   <NP>
                     {deleteBusy
-                      ? <Warning size={20} color={Colors.error} weight="duotone" />
-                      : <Trash size={20} color={Colors.error} weight="duotone" />}
+                      ? <Warning size={20} color={Colors.error} weight="regular" />
+                      : <Trash size={20} color={Colors.error} weight="regular" />}
                   </NP>
                 </View>
                 <View style={{ flex: 1 }}>

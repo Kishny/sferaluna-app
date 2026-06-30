@@ -123,17 +123,17 @@ export default function ContactScreen() {
                 <View style={styles.altSection}>
                   <Text style={styles.altTitle}>Autres moyens de nous joindre</Text>
                   <TouchableOpacity style={styles.altRow} onPress={() => Linking.openURL('mailto:contact@sferaluna.com')} activeOpacity={0.8}>
-                    <NP><EnvelopeSimple size={18} color={Colors.mutedPurple} weight="duotone" />
+                    <NP><EnvelopeSimple size={18} color={Colors.mutedPurple} weight="regular" />
                     </NP><Text style={styles.altText}>contact@sferaluna.com</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.altRow} onPress={() => Linking.openURL('https://instagram.com/sferaluna')} activeOpacity={0.8}>
-                    <InstagramLogo size={18} color={Colors.mutedPurple} weight="duotone" />
+                    <InstagramLogo size={18} color={Colors.mutedPurple} weight="regular" />
                     <Text style={styles.altText}>@sferaluna</Text>
                   </TouchableOpacity>
                 </View>
 
                 <View style={styles.note}>
-                  <MoonStars size={13} color={Colors.textMuted} weight="duotone" />
+                  <MoonStars size={13} color={Colors.textMuted} weight="regular" />
                   <Text style={styles.noteText}>Pour les signalements urgents, utilisez aussi le bouton de signalement directement sur le profil concerné.</Text>
                 </View>
               </>

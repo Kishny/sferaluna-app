@@ -268,7 +268,7 @@ export default function DiscoverScreen() {
         <View style={styles.header}>
           <View style={styles.headerTextBlock}>
             <View style={styles.greetingRow}>
-              <MoonStars size={18} color={Colors.accentPink} weight="duotone" />
+              <MoonStars size={18} color={Colors.accentPink} weight="regular" />
               <Text style={styles.headerTitle}>{greeting.label}</Text>
             </View>
             <Text style={styles.headerSub}>

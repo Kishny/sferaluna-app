@@ -56,25 +56,25 @@ function EventCard({ event, index, onToggle, isPending }: {
             </View>
           )}
         </View>
-        <MoonStars size={22} color="rgba(255,255,255,0.25)" weight="duotone" />
+        <MoonStars size={22} color="rgba(255,255,255,0.25)" weight="regular" />
       </LinearGradient>
 
       <View style={styles.cardBody}>
         <Text style={styles.cardTitle}>{event.title}</Text>
 
         <View style={styles.metaRow}>
-          <CalendarBlank size={13} color={Colors.accentPink} weight="duotone" />
+          <CalendarBlank size={13} color={Colors.accentPink} weight="regular" />
           <Text style={styles.metaText}>{formatEventDate(event.date)}</Text>
         </View>
 
         <View style={styles.metaRow}>
-          <MapPin size={13} color={Colors.accentPink} weight="duotone" />
+          <MapPin size={13} color={Colors.accentPink} weight="regular" />
           <Text style={styles.metaText}>{event.location}</Text>
         </View>
 
         {event.capacity && (
           <View style={styles.metaRow}>
-            <Users size={13} color={Colors.accentPink} weight="duotone" />
+            <Users size={13} color={Colors.accentPink} weight="regular" />
             <Text style={styles.metaText}>
               {event.registeredCount} / {event.capacity} participantes
             </Text>

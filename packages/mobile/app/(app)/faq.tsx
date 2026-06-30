@@ -154,7 +154,7 @@ export default function FaqScreen() {
             </View>
           ))}
           <View style={styles.footer}>
-            <MoonStars size={14} color={Colors.textMuted} weight="duotone" />
+            <MoonStars size={14} color={Colors.textMuted} weight="regular" />
             <Text style={styles.footerText}>Une question sans réponse ici ? Contactez-nous.</Text>
             <TouchableOpacity onPress={() => router.push('/(app)/contact' as any)} activeOpacity={0.8}>
               <Text style={styles.footerLink}>Nous écrire →</Text>

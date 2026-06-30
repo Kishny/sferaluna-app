@@ -58,7 +58,7 @@ function VisitorsSection() {
   return (
     <View style={styles.visitorsSection}>
       <View style={styles.visitorsTitleRow}>
-        <NP><Crown size={15} color={Colors.accentPink} weight="duotone" />
+        <NP><Crown size={15} color={Colors.accentPink} weight="regular" />
         </NP><Text style={styles.visitorsTitle}>Qui a visité mon profil</Text>
       </View>
       {isLoading ? (
@@ -460,7 +460,7 @@ export default function ProfileScreen() {
               <GlassCard style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionIcon}>
-                    <NP><Camera size={16} color={Colors.accentPink} weight="duotone" />
+                    <NP><Camera size={16} color={Colors.accentPink} weight="regular" />
                   </NP></View>
                   <Text style={styles.sectionTitle}>Mes photos</Text>
                   <Text style={styles.photoCount}>{myPhotos.length}/{MAX_PHOTOS}</Text>
@@ -519,7 +519,7 @@ export default function ProfileScreen() {
             <GlassCard style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionIcon}>
-                  <Sparkle size={16} color={Colors.accentPink} weight="duotone" />
+                  <Sparkle size={16} color={Colors.accentPink} weight="regular" />
                 </View>
                 <Text style={styles.sectionTitle}>À propos de moi</Text>
               </View>
@@ -546,7 +546,7 @@ export default function ProfileScreen() {
               <GlassCard style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionIcon}>
-                    <NP><Heart size={16} color={Colors.accentPink} weight="duotone" />
+                    <NP><Heart size={16} color={Colors.accentPink} weight="regular" />
                   </NP></View>
                   <Text style={styles.sectionTitle}>Je recherche</Text>
                 </View>
@@ -566,7 +566,7 @@ export default function ProfileScreen() {
               <GlassCard style={styles.orientationCard} padding={12}>
                 <View style={styles.orientationRow}>
                   <View style={styles.orientationIcon}>
-                    <Compass size={14} color={Colors.accentPink} weight="duotone" />
+                    <Compass size={14} color={Colors.accentPink} weight="regular" />
                   </View>
                   <Text style={styles.orientationLabel}>Orientation</Text>
                   <View style={styles.orientationChip}>
@@ -580,7 +580,7 @@ export default function ProfileScreen() {
             <GlassCard style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionIcon}>
-                  <NP><Star size={16} color={Colors.accentPink} weight="duotone" />
+                  <NP><Star size={16} color={Colors.accentPink} weight="regular" />
                 </NP></View>
                 <Text style={styles.sectionTitle}>Mes centres d'intérêt</Text>
               </View>
@@ -612,7 +612,7 @@ export default function ProfileScreen() {
               <GlassCard style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionIcon}>
-                    <ChatCircleText size={16} color={Colors.accentPink} weight="duotone" />
+                    <ChatCircleText size={16} color={Colors.accentPink} weight="regular" />
                   </View>
                   <Text style={styles.sectionTitle}>Ma réponse secrète</Text>
                 </View>
@@ -651,21 +651,21 @@ export default function ProfileScreen() {
             {!editing && (
               <View style={styles.hubSection}>
                 <View style={styles.hubHeaderRow}>
-                  <MoonStars size={16} color={Colors.accentPink} weight="duotone" />
+                  <MoonStars size={16} color={Colors.accentPink} weight="regular" />
                   <Text style={styles.hubTitle}>Espace SferaLuna</Text>
                 </View>
                 <View style={styles.hubGrid}>
                   {[
-                    { icon: <Lightning size={14} color="#a855f7" weight="duotone" />, label: 'VibeSphere', route: '/(app)/vibesphere', bg: 'rgba(168,85,247,0.13)' },
-                    { icon: <BookOpen size={14} color="#ec4899" weight="duotone" />, label: 'VibeMentor', route: '/(app)/vibementor', bg: 'rgba(236,72,153,0.13)' },
-                    { icon: <CalendarBlank size={14} color="#818cf8" weight="duotone" />, label: 'VibePlanner', route: '/(app)/vibeplanner', bg: 'rgba(129,140,248,0.13)' },
-                    { icon: <NP><Star size={14} color="#f59e0b" weight="duotone" /></NP>, label: 'Circle of Six', route: '/(app)/circle', bg: 'rgba(245,158,11,0.13)' },
-                    { icon: <CalendarBlank size={14} color="#f472b6" weight="duotone" />, label: 'Événements', route: '/(app)/evenements', bg: 'rgba(244,114,182,0.13)' },
-                    { icon: <ChatCircleText size={14} color="#4ade80" weight="duotone" />, label: 'Communauté', route: '/(app)/communaute', bg: 'rgba(74,222,128,0.13)' },
-                    { icon: <Question size={14} color="#34d399" weight="duotone" />, label: 'FAQ', route: '/(app)/faq', bg: 'rgba(52,211,153,0.13)' },
-                    { icon: <GraduationCap size={14} color="#60a5fa" weight="duotone" />, label: 'Guide', route: '/(app)/guide', bg: 'rgba(96,165,250,0.13)' },
-                    { icon: <Users size={14} color="#c084fc" weight="duotone" />, label: 'Équipe', route: '/(app)/equipe', bg: 'rgba(192,132,252,0.13)' },
-                    { icon: <Envelope size={14} color="#fb923c" weight="duotone" />, label: 'Contact', route: '/(app)/contact', bg: 'rgba(251,146,60,0.13)' },
+                    { icon: <Lightning size={14} color="#a855f7" weight="regular" />, label: 'VibeSphere', route: '/(app)/vibesphere', bg: 'rgba(168,85,247,0.13)' },
+                    { icon: <BookOpen size={14} color="#ec4899" weight="regular" />, label: 'VibeMentor', route: '/(app)/vibementor', bg: 'rgba(236,72,153,0.13)' },
+                    { icon: <CalendarBlank size={14} color="#818cf8" weight="regular" />, label: 'VibePlanner', route: '/(app)/vibeplanner', bg: 'rgba(129,140,248,0.13)' },
+                    { icon: <NP><Star size={14} color="#f59e0b" weight="regular" /></NP>, label: 'Circle of Six', route: '/(app)/circle', bg: 'rgba(245,158,11,0.13)' },
+                    { icon: <CalendarBlank size={14} color="#f472b6" weight="regular" />, label: 'Événements', route: '/(app)/evenements', bg: 'rgba(244,114,182,0.13)' },
+                    { icon: <ChatCircleText size={14} color="#4ade80" weight="regular" />, label: 'Communauté', route: '/(app)/communaute', bg: 'rgba(74,222,128,0.13)' },
+                    { icon: <Question size={14} color="#34d399" weight="regular" />, label: 'FAQ', route: '/(app)/faq', bg: 'rgba(52,211,153,0.13)' },
+                    { icon: <GraduationCap size={14} color="#60a5fa" weight="regular" />, label: 'Guide', route: '/(app)/guide', bg: 'rgba(96,165,250,0.13)' },
+                    { icon: <Users size={14} color="#c084fc" weight="regular" />, label: 'Équipe', route: '/(app)/equipe', bg: 'rgba(192,132,252,0.13)' },
+                    { icon: <Envelope size={14} color="#fb923c" weight="regular" />, label: 'Contact', route: '/(app)/contact', bg: 'rgba(251,146,60,0.13)' },
                   ].map((item) => (
                     <TouchableOpacity
                       key={item.label}
@@ -691,7 +691,7 @@ export default function ProfileScreen() {
                 >
                   <View style={styles.itemLeft}>
                     <View style={styles.sectionIcon}>
-                      <ShieldCheck size={16} color={Colors.accentPink} weight="duotone" />
+                      <ShieldCheck size={16} color={Colors.accentPink} weight="regular" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.linkLabel}>Sécurité du compte</Text>
@@ -712,7 +712,7 @@ export default function ProfileScreen() {
                 >
                   <View style={styles.itemLeft}>
                     <View style={styles.sectionIcon}>
-                      <LockKey size={16} color={Colors.accentPink} weight="duotone" />
+                      <LockKey size={16} color={Colors.accentPink} weight="regular" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.linkLabel}>Confidentialité & visibilité</Text>

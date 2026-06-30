@@ -66,7 +66,7 @@ export default function GuideScreen() {
             colors={['rgba(124,58,237,0.18)', 'rgba(219,39,119,0.14)']}
             style={styles.introBanner}
           >
-            <MoonStars size={24} color={Colors.accentPink} weight="duotone" />
+            <MoonStars size={24} color={Colors.accentPink} weight="regular" />
             <Text style={styles.introText}>
               Bienvenue sur SferaLuna — un espace pensé pour les rencontres authentiques, au rythme qui vous convient.
             </Text>
