@@ -661,7 +661,7 @@ export default function ChatScreen() {
             onPress={() => {
               if (contact) {
                 hapticLight();
-                router.push(`/(app)/profil/${match?.matchId}` as any);
+                router.push(`/(app)/profil/${contact?._id}` as any);
               }
             }}
           >
