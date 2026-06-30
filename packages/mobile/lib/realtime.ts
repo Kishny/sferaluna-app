@@ -17,7 +17,10 @@
  * sont pas définies, le chat reste utilisable sans mise à jour temps réel
  * (l'envoi/la lecture des messages continue de fonctionner via l'API REST).
  */
-import Pusher from 'pusher-js';
+// pusher-js utilise module.exports.Pusher (CJS named export, pas default) —
+// l'import nommé est obligatoire sinon Hermes reçoit le plain object { Pusher }
+// au lieu de la classe, et `new Pusher()` lève "constructor is not callable".
+import { Pusher } from 'pusher-js';
 import type { ChannelAuthorizationCallback } from 'pusher-js';
 import Constants from 'expo-constants';
 import { API_BASE_URL } from './http';
@@ -41,11 +44,12 @@ let sharedClient: Pusher | null | undefined;
 export function getPusherClient(): Pusher | null {
   if (sharedClient !== undefined) return sharedClient;
 
-  if (!PUSHER_KEY) {
+  if (!PUSHER_KEY || typeof Pusher !== 'function') {
     sharedClient = null;
     return sharedClient;
   }
 
+  try {
   sharedClient = new Pusher(PUSHER_KEY, {
     cluster: PUSHER_CLUSTER,
     channelAuthorization: {
@@ -74,6 +78,10 @@ export function getPusherClient(): Pusher | null {
       },
     },
   });
+  } catch (err) {
+    console.warn('[Pusher] Impossible d\'initialiser le client temps réel :', err);
+    sharedClient = null;
+  }
 
   return sharedClient;
 }
