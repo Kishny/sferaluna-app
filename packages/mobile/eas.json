@@ -29,7 +29,7 @@
       "autoIncrement": true,
       "channel": "production",
       "ios": {
-        "image": "macos-sequoia-15.2-xcode-16.2:latest"
+        "image": "macos-sonoma-14.6-xcode-16.1:latest"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://www.sferaluna.com"
