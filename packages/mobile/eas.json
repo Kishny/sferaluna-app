@@ -32,7 +32,8 @@
         "image": "macos-sequoia-15.6-xcode-26.2"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://www.sferaluna.com"
+        "EXPO_PUBLIC_API_URL": "https://www.sferaluna.com",
+        "EXPO_PUBLIC_EAS_PROJECT_ID": "cd005024-c3bb-41df-b093-6b54a291de40"
       }
     }
   },

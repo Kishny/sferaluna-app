@@ -7,6 +7,7 @@ import {
   Platform,
   Dimensions,
   StyleSheet,
+  SafeAreaView,
 } from "react-native";
 
 interface Props {
@@ -111,7 +112,27 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     const { errors, expanded, expandedIndex, copied } = this.state;
 
-    if (errors.length === 0 || Platform.OS !== "web") return this.props.children;
+    if (errors.length === 0) return this.props.children;
+
+    // ── Fallback natif (iOS / Android) ────────────────────────────────────
+    // Affiche un écran de récupération simple plutôt que de laisser l'erreur
+    // se propager au layer natif et crasher via expo-updates errorRecoveryQueue.
+    if (Platform.OS !== "web") {
+      return (
+        <SafeAreaView style={s.nativeScreen}>
+          <View style={s.nativeContent}>
+            <Text style={s.nativeSadFace}>🌙</Text>
+            <Text style={s.nativeTitle}>Une erreur s'est produite</Text>
+            <Text style={s.nativeMessage} numberOfLines={4}>
+              {errors[0]?.message ?? "Erreur inconnue"}
+            </Text>
+            <TouchableOpacity style={s.nativeBtn} onPress={this.retry} activeOpacity={0.8}>
+              <Text style={s.nativeBtnText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      );
+    }
 
     const { height } = Dimensions.get("window");
     const detailsMaxHeight = Math.min(height * 0.5, 440);
@@ -365,5 +386,47 @@ const s = StyleSheet.create({
     color: "#fff",
     fontSize: 13,
     fontWeight: "600",
+  },
+
+  // ── Styles fallback natif ──────────────────────────────────────────────
+  nativeScreen: {
+    flex: 1,
+    backgroundColor: "#1a0b2e",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  nativeContent: {
+    alignItems: "center",
+    paddingHorizontal: 32,
+    maxWidth: 360,
+  },
+  nativeSadFace: {
+    fontSize: 56,
+    marginBottom: 20,
+  },
+  nativeTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  nativeMessage: {
+    fontSize: 14,
+    color: "#a78bfa",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 32,
+  },
+  nativeBtn: {
+    backgroundColor: "#7c3aed",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+  },
+  nativeBtnText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

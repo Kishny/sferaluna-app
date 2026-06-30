@@ -26,16 +26,24 @@ import * as Device from 'expo-device';
 import { http } from './http';
 
 // ── Configuration du comportement des notifications ────────────────────────
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Exécuté au niveau module (import time) — try/catch obligatoire pour éviter
+// un crash fatal si expo-notifications n'est pas encore initialisé (ex. iOS 26
+// beta avec des changements d'initialisation des TurboModules).
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      // shouldShowBanner / shouldShowList : propriétés iOS 14+ supportées
+      // par expo-notifications >= 0.28 ; ignorées silencieusement sur Android.
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch (err) {
+  console.warn('[Notifs] setNotificationHandler failed:', err);
+}
 
 // ── Obtenir le token push ──────────────────────────────────────────────────
 
