@@ -13,6 +13,7 @@
  * Toutes les routes de l'API renvoient un JSON `{ success, ... }`.
  */
 import Constants from 'expo-constants';
+import { DEMO_MODE, resolveDemoRequest } from './demoMode';
 
 // En dev (simulateur + web preview), on cible le backend local.
 // En prod (build EAS), on utilise apiUrl depuis app.json extra.
@@ -67,6 +68,12 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
  */
 export async function apiFetch<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, query, headers } = options;
+
+  // Mode capture App Store : sert des données fictives, aucun appel réseau.
+  if (DEMO_MODE) {
+    await new Promise((r) => setTimeout(r, 120)); // léger délai pour un rendu naturel
+    return resolveDemoRequest<T>(path, method, query);
+  }
 
   const res = await fetch(buildUrl(path, query), {
     method,

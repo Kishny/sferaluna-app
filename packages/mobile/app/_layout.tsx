@@ -4,13 +4,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import {
-  registerForPushNotifications,
   setupNotificationHandlers,
   navigateFromNotification,
   clearBadge,
+  getLastNotificationResponse,
 } from "../lib/notifications";
-// @ts-ignore
-import * as Notifications from 'expo-notifications';
 
 // ── Gestionnaire global d'erreurs JS fatales ──────────────────────────────
 // Intercepte les erreurs JS non-catchées AVANT qu'expo-updates ne les reçoive
@@ -60,11 +58,10 @@ export default function RootLayout() {
   useEffect(() => {
     routerReady.current = true;
 
-    // Demande de permission + enregistrement du token push
-    // .catch() obligatoire : une rejection non-gérée est fatale sur RN 0.81
-    registerForPushNotifications().catch((err) =>
-      console.warn('[Push] Erreur enregistrement:', err)
-    );
+    // NB : l'enregistrement du token push (registerForPushNotifications) est
+    // déclenché depuis app/(app)/_layout.tsx, monté uniquement une fois
+    // l'utilisatrice authentifiée — évite un PUT /api/users/push-token 401
+    // au démarrage, avant la connexion.
 
     // Handlers foreground / tap-to-open (background → premier plan)
     let cleanup: (() => void) | undefined;
@@ -80,18 +77,17 @@ export default function RootLayout() {
     }
 
     // Cold launch : app tuée → tap sur une notification
-    // getLastNotificationResponseAsync retourne la réponse qui a ouvert l'app
-    Notifications.getLastNotificationResponseAsync()
-      .then(
-        (response: { notification: { request: { content: { data: Record<string, unknown> } } } } | null) => {
-          if (response) {
-            const data = response.notification.request.content.data as Record<string, unknown>;
-            // Petit délai pour que la navigation soit prête
-            setTimeout(() => navigateFromNotification(data, router), 300);
-          }
+    // getLastNotificationResponse retourne la réponse qui a ouvert l'app
+    // (no-op sûr en Expo Go / web).
+    getLastNotificationResponse()
+      .then((response) => {
+        if (response) {
+          const data = response.notification.request.content.data as Record<string, unknown>;
+          // Petit délai pour que la navigation soit prête
+          setTimeout(() => navigateFromNotification(data, router), 300);
         }
-      )
-      .catch((err: unknown) => console.warn('[Notifs] getLastNotificationResponseAsync:', err));
+      })
+      .catch((err: unknown) => console.warn('[Notifs] getLastNotificationResponse:', err));
 
     // Vide le badge au lancement
     clearBadge().catch((err: unknown) => console.warn('[Badge] clearBadge:', err));

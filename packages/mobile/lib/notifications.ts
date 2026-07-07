@@ -17,39 +17,79 @@
  */
 
 import { Platform } from 'react-native';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — installed via bun install (expo-notifications ~0.30.25)
-import * as Notifications from 'expo-notifications';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — installed via bun install (expo-device ~7.1.4)
-import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { http } from './http';
+import { getSession } from './auth';
 
-// ── Configuration du comportement des notifications ────────────────────────
-// Exécuté au niveau module (import time) — try/catch obligatoire pour éviter
-// un crash fatal si expo-notifications n'est pas encore initialisé (ex. iOS 26
-// beta avec des changements d'initialisation des TurboModules).
-try {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-      // shouldShowBanner / shouldShowList : propriétés iOS 14+ supportées
-      // par expo-notifications >= 0.28 ; ignorées silencieusement sur Android.
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
-  });
-} catch (err) {
-  console.warn('[Notifs] setNotificationHandler failed:', err);
+// ── Disponibilité des notifications natives ────────────────────────────────
+// expo-notifications N'EST PLUS supporté dans Expo Go (retiré depuis SDK 53) :
+// son simple import y déclenche `new NativeEventEmitter(null)` → crash fatal.
+// On ne charge donc la lib QUE dans un dev build / build standalone, et jamais
+// sur le web. Le chargement est paresseux (require) pour qu'aucune évaluation
+// de module natif n'ait lieu tant qu'on n'est pas dans un environnement sûr.
+const IS_EXPO_GO = Constants.executionEnvironment === 'storeClient';
+export const PUSH_SUPPORTED = Platform.OS !== 'web' && !IS_EXPO_GO;
+
+let _notifs: any = null;
+let _handlerConfigured = false;
+
+/** Charge expo-notifications à la demande, ou null si l'environnement ne le permet pas. */
+function notifs(): any | null {
+  if (!PUSH_SUPPORTED) return null;
+  if (_notifs) return _notifs;
+  try {
+    // require paresseux : évite toute évaluation du module natif en Expo Go / web.
+    _notifs = require('expo-notifications');
+  } catch (err) {
+    console.warn('[Notifs] expo-notifications indisponible:', err);
+    return null;
+  }
+  // Configure le comportement d'affichage une seule fois, à la première utilisation.
+  if (!_handlerConfigured) {
+    try {
+      _notifs.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }),
+      });
+      _handlerConfigured = true;
+    } catch (err) {
+      console.warn('[Notifs] setNotificationHandler failed:', err);
+    }
+  }
+  return _notifs;
 }
 
 // ── Obtenir le token push ──────────────────────────────────────────────────
 
 export async function registerForPushNotifications(): Promise<string | null> {
+  const Notifications = notifs();
+  if (!Notifications) {
+    console.log('[Push] Environnement sans support push (Expo Go / web) — désactivé.');
+    return null;
+  }
+
+  // Session requise : sans cookie NextAuth valide, PUT /api/users/push-token
+  // renverrait 401. On diffère donc l'enregistrement tant que l'utilisatrice
+  // n'est pas connectée (rappelé depuis (app)/_layout, monté après login).
+  const session = await getSession().catch(() => null);
+  if (!session) {
+    console.log('[Push] Pas de session active — enregistrement du token différé.');
+    return null;
+  }
+
   // Les simulateurs ne supportent pas les push notifications réelles
-  if (!Device.isDevice) {
+  let Device: any = null;
+  try {
+    Device = require('expo-device');
+  } catch {
+    /* expo-device indisponible — on continue sans le garde simulateur */
+  }
+  if (Device && !Device.isDevice) {
     console.log('[Push] Simulateur détecté — push notifications désactivées.');
     return null;
   }
@@ -125,12 +165,15 @@ async function savePushTokenToBackend(token: string): Promise<void> {
  * Retourne une fonction de nettoyage.
  */
 export function setupNotificationHandlers(options?: {
-  onNotification?: (notification: Notifications.Notification) => void;
-  onNotificationResponse?: (response: Notifications.NotificationResponse) => void;
+  onNotification?: (notification: any) => void;
+  onNotificationResponse?: (response: any) => void;
 }): () => void {
+  const Notifications = notifs();
+  if (!Notifications) return () => {};
+
   // Notification reçue app ouverte (foreground)
   const foregroundSub = Notifications.addNotificationReceivedListener(
-    (notification: Notifications.Notification) => {
+    (notification: any) => {
       console.log('[Push] Reçue (foreground):', notification.request.content.title);
       options?.onNotification?.(notification);
     }
@@ -138,7 +181,7 @@ export function setupNotificationHandlers(options?: {
 
   // Tap sur une notification (foreground ou background → premier plan)
   const responseSub = Notifications.addNotificationResponseReceivedListener(
-    (response: Notifications.NotificationResponse) => {
+    (response: any) => {
       console.log('[Push] Tap:', response.notification.request.content.data);
       options?.onNotificationResponse?.(response);
     }
@@ -148,6 +191,21 @@ export function setupNotificationHandlers(options?: {
     foregroundSub.remove();
     responseSub.remove();
   };
+}
+
+/**
+ * Réponse de notification ayant ouvert l'app (cold launch).
+ * Garde l'appelant (_layout) libre de toute dépendance à expo-notifications.
+ */
+export async function getLastNotificationResponse(): Promise<any | null> {
+  const Notifications = notifs();
+  if (!Notifications) return null;
+  try {
+    return await Notifications.getLastNotificationResponseAsync();
+  } catch (err) {
+    console.warn('[Notifs] getLastNotificationResponse:', err);
+    return null;
+  }
 }
 
 /**
@@ -185,6 +243,8 @@ export function navigateFromNotification(
 // ── Gestion du badge ───────────────────────────────────────────────────────
 
 export async function setBadgeCount(count: number): Promise<void> {
+  const Notifications = notifs();
+  if (!Notifications) return;
   try {
     await Notifications.setBadgeCountAsync(count);
   } catch {
