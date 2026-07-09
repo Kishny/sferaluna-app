@@ -31,7 +31,8 @@
       "usesAppleSignIn": true,
       "entitlements": {
         "aps-environment": "production"
-      }
+      },
+      "appleTeamId": "52ACXKDK5A"
     },
     "android": {
       "package": "com.sferaluna.app",

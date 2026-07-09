@@ -14,6 +14,7 @@
  * cette configuration native n'est pas faite, les boutons Google/Apple
  * affichent un message explicite plutôt que d'échouer silencieusement.
  */
+import { Platform } from 'react-native';
 import { http, apiFetch, ApiError, API_BASE_URL } from './http';
 
 export type AuthProvider = 'credentials' | 'google' | 'apple';
@@ -184,7 +185,6 @@ export async function signInWithGoogle(): Promise<Session> {
   // @ts-ignore — expo-auth-session installé via bun install
   const { makeRedirectUri } = await import('expo-auth-session');
   const WebBrowser = await import('expo-web-browser');
-  const { Platform } = await import('react-native');
   await WebBrowser.maybeCompleteAuthSession();
 
   const discovery = {
@@ -256,7 +256,6 @@ export async function signInWithGoogle(): Promise<Session> {
  * Sur Android, lève une erreur explicite.
  */
 export async function signInWithApple(): Promise<Session> {
-  const Platform = await import('react-native').then((m) => m.Platform);
   if (Platform.OS !== 'ios') {
     throw new ApiError(
       "Apple Sign In est disponible uniquement sur iOS.",

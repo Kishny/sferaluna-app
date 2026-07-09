@@ -30,6 +30,7 @@ import {
   demoCircleResponse,
   demoVisitorsResponse,
   demoVibePlansResponse,
+  demoSession,
 } from './demoData';
 import type { PublicProfileFull } from './api';
 
@@ -77,6 +78,9 @@ export function resolveDemoRequest<T>(
   }
 
   // ── Lectures ──
+  // Session « connectée » : indispensable pour que le splash mène aux écrans
+  // authentifiés (et donc aux captures) au lieu de l'écran de connexion.
+  if (clean === '/api/auth/session') return demoSession as T;
   if (clean === '/api/users/profile') return demoMyProfile as T;
   if (clean === '/api/profiles') return demoProfilesResponse as T;
   if (clean.startsWith('/api/profiles/')) {

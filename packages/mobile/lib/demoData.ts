@@ -53,6 +53,30 @@ const IDS = {
 };
 
 // ─────────────────────────────────────────────────────────────
+//  SESSION  (GET /api/auth/session) — utilisatrice « connectée »
+//  Sans ça, le splash renverrait vers l'écran de connexion et les
+//  écrans authentifiés (donc les captures) resteraient inaccessibles.
+// ─────────────────────────────────────────────────────────────
+export const demoSession = {
+  user: {
+    id: DEMO_ME_ID,
+    _id: DEMO_ME_ID,
+    email: 'margaux@example.com',
+    name: 'Margaux',
+    image: W(68),
+    pseudonyme: 'Margaux',
+    role: 'user' as const,
+    provider: 'credentials' as const,
+    hasCompletedProfile: true,
+    plan: 'premium-monthly' as const,
+    isPremium: true,
+    subscriptionStatus: 'active' as const,
+    identityVerified: true,
+  },
+  expires: inDays(30),
+};
+
+// ─────────────────────────────────────────────────────────────
 //  MON PROFIL  (GET /api/users/profile)
 // ─────────────────────────────────────────────────────────────
 export const demoMyProfile = {
