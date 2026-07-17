@@ -4,7 +4,7 @@ import { StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Compass, ChatCircle, Bell, User, Gear,
+  House, Compass, ChatCircle, Bell, User, Gear,
 } from 'phosphor-react-native';
 import { Colors } from '../../../lib/theme';
 import { hapticLight } from '../../../lib/haptics';
@@ -33,6 +33,7 @@ function makeTabIcon(Icon: React.ComponentType<any>) {
   };
 }
 
+const HomeIcon      = makeTabIcon(House);
 const DiscoverIcon  = makeTabIcon(Compass);
 const MessagesIcon  = makeTabIcon(ChatCircle);
 const AlertsIcon    = makeTabIcon(Bell);
@@ -73,8 +74,19 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
+        name="accueil"
+        options={{
+          title: 'Accueil',
+          tabBarIcon: (props) => <HomeIcon {...props} />,
+        }}
+      />
+      {/* Découverte reléguée : reste une route navigable (depuis le hub Accueil
+          et l'écran Messages) mais n'est plus un onglet de la barre — le swipe
+          n'est plus la vitrine de l'app (différenciation 4.3b). */}
+      <Tabs.Screen
         name="discover"
         options={{
+          href: null,
           title: 'Découvrir',
           tabBarIcon: (props) => <DiscoverIcon {...props} />,
         }}

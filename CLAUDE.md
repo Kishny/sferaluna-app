@@ -166,8 +166,9 @@ Pour vérifier qu'une erreur est bien nouvelle (introduite par une modif) : `git
 - Mode Fantôme, sécurité, confidentialité
 
 ### Reste à faire 🚧
-1. **Photos sur le site web** — section "Mes photos" dans `mon-compte` + galerie dans `profil/[id]` (mêmes routes API, déjà disponibles)
-2. `bun install` (nouvelles dépendances à installer localement)
+1. ~~**Photos sur le site web**~~ ✅ FAIT — section `PhotosSection` ("Mes photos") dans `mon-compte` + galerie dans `profil/[id]` (routes `/api/upload/photo` POST/DELETE).
+2. **Déployer le backend** pour activer la persistance serveur de Circle of Six (nouvelle route `/api/users/trusted-contacts` + champ `User.trustedContacts`) — sinon l'app mobile en prod reçoit un 404.
+3. `bun install` (nouvelles dépendances à installer localement)
 3. `eas init` (lier le projet Expo, remplacer `REPLACE_WITH_YOUR_EAS_PROJECT_ID`)
 4. Configurer `eas.json` avec les vrais credentials App Store (appleId, ascAppId, appleTeamId) et Play Store (serviceAccountKeyPath)
 5. Configurer `EXPO_PUBLIC_API_URL` en production

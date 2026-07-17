@@ -82,7 +82,7 @@ export default function RegisterScreen() {
     setProviderLoading(provider);
     try {
       await signInWithProvider(provider);
-      router.replace('/(app)/(tabs)/discover');
+      router.replace('/(app)/(tabs)/accueil');
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Connexion impossible pour le moment.');
     } finally {

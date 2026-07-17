@@ -23,7 +23,7 @@ const FAQ: FaqSection[] = [
       },
       {
         q: "Comment compléter mon profil ?",
-        a: "Rendez-vous dans l'onglet Profil. Plus votre profil est riche (photo, bio, centres d'intérêt, intentions), mieux l'algorithme Circle of Six pourra vous proposer des affinités pertinentes.",
+        a: "Rendez-vous dans l'onglet Profil. Plus votre profil est riche (photo, bio, centres d'intérêt, intentions), mieux nos Affinités de la semaine pourront vous proposer des profils pertinents.",
       },
       {
         q: "Puis-je modifier mon pseudo ou mes informations ?",
@@ -31,7 +31,7 @@ const FAQ: FaqSection[] = [
       },
       {
         q: "Comment fonctionne la vérification d'identité ?",
-        a: "La vérification est effectuée via Stripe Identity. Elle est optionnelle mais fortement recommandée — elle affiche un badge sur votre profil et augmente votre score de confiance.",
+        a: "La vérification est effectuée via Stripe Identity (pièce d'identité + selfie en direct). Elle est obligatoire pour accéder à la communauté : c'est ce qui garantit un espace sûr, sans faux profils. Une fois vérifiée, un badge apparaît sur votre profil.",
       },
     ],
   },

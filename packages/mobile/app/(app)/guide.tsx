@@ -12,7 +12,7 @@ import { NP } from '../../components/NP';
 const STEPS = [
   {
     step: '01', emoji: '🌸', title: 'Soignez votre profil',
-    body: "Ajoutez une photo authentique, rédigez une bio qui vous ressemble et précisez vos intentions. Un profil complet multiplie par 3 vos chances d'apparaître dans le Circle of Six des autres membres.",
+    body: "Ajoutez une photo authentique, rédigez une bio qui vous ressemble et précisez vos intentions. Un profil complet multiplie par 3 vos chances d'apparaître dans les Affinités de la semaine des autres membres.",
   },
   {
     step: '02', emoji: '🔍', title: 'Explorez Découverte',

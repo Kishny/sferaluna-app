@@ -1,189 +1,303 @@
-import React from 'react';
+/**
+ * Circle of Six — réseau de sécurité personnel.
+ *
+ * Vrai module de sécurité (et non de mise en relation) : l'utilisatrice ajoute
+ * jusqu'à 6 contacts de confiance (stockés localement, chiffrés, jamais envoyés
+ * au serveur — voir lib/circleSafety.ts) et peut, en un geste, partager son plan
+ * de sortie ou signaler qu'elle est bien rentrée, via la feuille de partage
+ * native (SMS, messageries…).
+ *
+ * C'est le différenciateur central de SferaLuna face au 4.3(b) : une
+ * fonctionnalité de sécurité réelle, absente des apps de rencontre génériques.
+ * L'ancienne « sélection de profils » qui portait ce nom vit désormais dans
+ * app/(app)/affinites.tsx.
+ */
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
-  ActivityIndicator, ScrollView,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, Modal,
+  ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
 import { LinearGradient } from '../../components/LinearGradient';
 import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
-import { ArrowLeft, SealCheck, MapPin, Sparkle, Star } from 'phosphor-react-native';
+import {
+  ArrowLeft, ShieldCheck, Plus, Trash, PaperPlaneTilt, HouseLine, Phone, X, UserPlus,
+} from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
-import { fetchCircle, likeProfile, type CircleProfile } from '../../lib/api';
-import { ApiError } from '../../lib/http';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { NP } from '../../components/NP';
-import { AvatarPlaceholder } from '../../components/AvatarPlaceholder';
-
-function formatWeekOf(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-}
-
-function CircleCard({ profile, index }: { profile: CircleProfile; index: number }) {
-  const queryClient = useQueryClient();
-  const likeMutation = useMutation({
-    mutationFn: () => likeProfile(profile._id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['circle'] }),
-  });
-
-  const tags = [...(profile.intentions ?? []), ...(profile.interets ?? [])].slice(0, 3);
-  const accent = ACCENT_BARS[index % ACCENT_BARS.length];
-
-  return (
-    <View style={styles.card}>
-      <LinearGradient colors={accent} style={styles.accentBar} />
-      <LinearGradient
-        colors={[Colors.accentPurple, Colors.accentPink]}
-        style={styles.cardHalo}
-      >
-        <View style={styles.cardAvatarWrap}>
-          <AvatarPlaceholder uri={profile.image} name={profile.pseudonyme} size={72} />
-        </View>
-      </LinearGradient>
-
-      {profile.identityVerified && (
-        <View style={styles.verifiedBadge}>
-          <SealCheck size={14} color={Colors.success} weight="fill" />
-        </View>
-      )}
-
-      <View style={styles.cardBody}>
-        <Text style={styles.cardName} numberOfLines={1}>
-          {profile.pseudonyme}{profile.age ? `, ${profile.age}` : ''}
-        </Text>
-
-        {profile.localisation && (
-          <View style={styles.cardLocation}>
-            <MapPin size={11} color={Colors.textMuted} weight="fill" />
-            <Text style={styles.cardLocationText} numberOfLines={1}>{profile.localisation}</Text>
-          </View>
-        )}
-
-        {/* Score de compatibilité */}
-        <View style={styles.scoreRow}>
-          <NP><Star size={12} color="#F59E0B" weight="fill" />
-          </NP><Text style={styles.scoreText}>{profile.compatibilityScore} pts</Text>
-        </View>
-
-        {/* Hints de compatibilité */}
-        {profile.compatibilityHints.length > 0 && (
-          <Text style={styles.hints} numberOfLines={1}>
-            {profile.compatibilityHints.slice(0, 2).join(' · ')}
-          </Text>
-        )}
-
-        {/* Tags */}
-        {tags.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsRow}>
-            {tags.map((t, i) => (
-              <View key={`${t}-${i}`} style={styles.tag}>
-                <Text style={styles.tagText}>{t}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        )}
-
-        <TouchableOpacity
-          style={[styles.likeBtn, likeMutation.isSuccess && styles.likeBtnDone]}
-          onPress={() => likeMutation.mutate()}
-          disabled={likeMutation.isPending || likeMutation.isSuccess}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={likeMutation.isSuccess
-              ? [Colors.success, '#059669']
-              : [Colors.accentPurple, Colors.accentPink]}
-            style={styles.likeBtnGradient}
-          >
-            <Text style={styles.likeBtnText}>
-              {likeMutation.isSuccess ? '💕 Match !' : likeMutation.isPending ? '…' : "💜 J'aime"}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+import { Colors, Spacing, Radius, Typography } from '../../lib/theme';
+import { GradientButton } from '../../components/GradientButton';
+import { GlassInput } from '../../components/GlassInput';
+import {
+  getTrustedContacts, addTrustedContact, removeTrustedContact,
+  buildPlanMessage, buildSafeMessage, MAX_CONTACTS, type TrustedContact,
+} from '../../lib/circleSafety';
 
 export default function CircleScreen() {
-  const { data, isLoading, isError, error, refetch, isRefetching } = useQuery({
-    queryKey: ['circle'],
-    queryFn: fetchCircle,
-    staleTime: 60 * 60 * 1000, // 1h — le cercle change seulement chaque semaine
-  });
+  const [contacts, setContacts] = useState<TrustedContact[] | null>(null);
+  const [plan, setPlan] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // Recharge à chaque focus (contacts persistés localement).
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getTrustedContacts()
+        .then((list) => { if (active) setContacts(list); })
+        .catch(() => { if (active) setContacts([]); });
+      return () => { active = false; };
+    }, [])
+  );
+
+  const hasContacts = (contacts?.length ?? 0) > 0;
+  const canAdd = (contacts?.length ?? 0) < MAX_CONTACTS;
+
+  const handleShare = async (message: string) => {
+    if (!hasContacts) return;
+    try {
+      await Share.share({ message });
+    } catch {
+      // Partage annulé — rien à faire.
+    }
+  };
+
+  const handleAdd = async () => {
+    if (saving) return;
+    if (!newPhone.trim()) {
+      Alert.alert('Numéro requis', 'Indiquez au moins un numéro de téléphone.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const updated = await addTrustedContact(newName || 'Contact', newPhone);
+      setContacts(updated);
+      setNewName('');
+      setNewPhone('');
+      setModalOpen(false);
+    } catch {
+      Alert.alert('Oups', "Impossible d'ajouter ce contact pour le moment. Réessayez.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemove = (contact: TrustedContact) => {
+    Alert.alert(
+      'Retirer ce contact ?',
+      `${contact.name} ne fera plus partie de votre Circle of Six.`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Retirer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setContacts(await removeTrustedContact(contact.id));
+            } catch {
+              Alert.alert('Oups', 'Impossible de retirer ce contact pour le moment.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <LinearGradient colors={[Colors.bgDeep, Colors.bgMid]} style={styles.bg}>
-      <OrbitGlow size={280} style={{ top: -60, right: -90 }} />
-      <OrbitGlow size={320} style={{ bottom: -100, left: -110 }} />
+      <OrbitGlow size={280} variant="light" style={{ top: -60, right: -90 }} />
+      <OrbitGlow size={320} variant="light" style={{ bottom: -100, left: -110 }} />
       <StatusBar style="light" />
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
-          </NP></TouchableOpacity>
+            <ArrowLeft size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
           <View style={styles.headerCenter}>
             <View style={styles.titleRow}>
-              <Sparkle size={18} color={Colors.accentPink} weight="fill" />
+              <ShieldCheck size={18} color={Colors.accentPink} weight="fill" />
               <Text style={styles.title}>Circle of Six</Text>
             </View>
-            <Text style={styles.subtitle}>
-              {data?.weekOf
-                ? `Semaine du ${formatWeekOf(data.weekOf)} · 6 affinités choisies pour vous`
-                : '6 profils curatés chaque semaine selon vos affinités'}
-            </Text>
+            <Text style={styles.subtitle}>Votre réseau de sécurité personnel</Text>
           </View>
         </View>
 
-        {isLoading ? (
+        {contacts === null ? (
           <View style={styles.center}>
             <ActivityIndicator color={Colors.accentPink} size="large" />
-            <Text style={styles.loadingText}>Calcul de vos affinités…</Text>
-          </View>
-        ) : isError ? (
-          <View style={styles.center}>
-            <Text style={styles.emptyEmoji}>🌙</Text>
-            <Text style={styles.emptyTitle}>Connexion impossible</Text>
-            <Text style={styles.emptyText}>
-              {error instanceof ApiError ? error.message : 'Impossible de charger le cercle.'}
-            </Text>
-            <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-              <Text style={styles.retryText}>{isRefetching ? 'Chargement…' : 'Réessayer'}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : !data?.profiles.length ? (
-          <View style={styles.center}>
-            <Text style={styles.emptyEmoji}>🌙</Text>
-            <Text style={styles.emptyTitle}>Pas encore de cercle</Text>
-            <Text style={styles.emptyText}>
-              Complétez votre profil pour que l'algorithme puisse calculer vos meilleures affinités.
-            </Text>
           </View>
         ) : (
-          <FlatList
-            data={data.profiles}
-            keyExtractor={(p) => p._id}
-            numColumns={2}
-            contentContainerStyle={styles.grid}
-            columnWrapperStyle={styles.row}
+          <ScrollView
+            contentContainerStyle={styles.scroll}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item, index }) => <CircleCard profile={item} index={index} />}
-          />
+          >
+            {/* Intro */}
+            <View style={styles.introCard}>
+              <View style={styles.introIcon}>
+                <ShieldCheck size={26} color={Colors.textPrimary} weight="fill" />
+              </View>
+              <Text style={styles.introText}>
+                Ajoutez jusqu'à 6 contacts de confiance. En un geste, partagez
+                votre plan de soirée ou prévenez-les que vous êtes bien rentrée.
+                Vos contacts restent privés, sur votre téléphone.
+              </Text>
+            </View>
+
+            {/* Actions rapides */}
+            <Text style={styles.sectionLabel}>Actions rapides</Text>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={[styles.actionCard, !hasContacts && styles.actionDisabled]}
+                activeOpacity={0.85}
+                disabled={!hasContacts}
+                onPress={() => handleShare(buildPlanMessage(plan))}
+              >
+                <LinearGradient
+                  colors={[Colors.accentPurple, Colors.accentPink]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.actionIcon}
+                >
+                  <PaperPlaneTilt size={22} color={Colors.textPrimary} weight="fill" />
+                </LinearGradient>
+                <Text style={styles.actionTitle}>Partager mon plan</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionCard, !hasContacts && styles.actionDisabled]}
+                activeOpacity={0.85}
+                disabled={!hasContacts}
+                onPress={() => handleShare(buildSafeMessage())}
+              >
+                <LinearGradient
+                  colors={['#4ECDC4', '#44A08D']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.actionIcon}
+                >
+                  <HouseLine size={22} color={Colors.textPrimary} weight="fill" />
+                </LinearGradient>
+                <Text style={styles.actionTitle}>Je suis bien rentrée</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Contexte du plan */}
+            <GlassInput
+              label="Votre plan de ce soir (optionnel)"
+              placeholder="Ex : dîner au centre-ville, retour vers 23h"
+              value={plan}
+              onChangeText={setPlan}
+              multiline
+            />
+
+            {/* Contacts */}
+            <View style={styles.contactsHeader}>
+              <Text style={styles.sectionLabel}>
+                Contacts de confiance · {contacts.length}/{MAX_CONTACTS}
+              </Text>
+            </View>
+
+            {!hasContacts ? (
+              <View style={styles.emptyBox}>
+                <UserPlus size={34} color={Colors.textMuted} weight="light" />
+                <Text style={styles.emptyText}>
+                  Ajoutez votre premier contact de confiance pour activer votre
+                  réseau de sécurité.
+                </Text>
+              </View>
+            ) : (
+              contacts.map((c) => (
+                <View key={c.id} style={styles.contactRow}>
+                  <View style={styles.contactAvatar}>
+                    <Text style={styles.contactInitial}>
+                      {c.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.contactBody}>
+                    <Text style={styles.contactName} numberOfLines={1}>{c.name}</Text>
+                    <View style={styles.contactPhoneRow}>
+                      <Phone size={12} color={Colors.textMuted} weight="fill" />
+                      <Text style={styles.contactPhone} numberOfLines={1}>{c.phone}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleRemove(c)}
+                    hitSlop={8}
+                    style={styles.removeBtn}
+                  >
+                    <Trash size={18} color={Colors.error} weight="bold" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+
+            {canAdd && (
+              <TouchableOpacity
+                style={styles.addBtn}
+                activeOpacity={0.8}
+                onPress={() => setModalOpen(true)}
+              >
+                <Plus size={18} color={Colors.accentPink} weight="bold" />
+                <Text style={styles.addText}>Ajouter un contact</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
         )}
       </SafeAreaView>
+
+      {/* Modal ajout */}
+      <Modal
+        visible={modalOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalOpen(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalRoot}
+        >
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Nouveau contact de confiance</Text>
+              <TouchableOpacity onPress={() => setModalOpen(false)} hitSlop={8}>
+                <X size={22} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <GlassInput
+              label="Nom"
+              placeholder="Ex : Maman, Léa, Sofia…"
+              value={newName}
+              onChangeText={setNewName}
+            />
+            <GlassInput
+              label="Téléphone"
+              placeholder="+33 6 12 34 56 78"
+              value={newPhone}
+              onChangeText={setNewPhone}
+              keyboardType="phone-pad"
+            />
+
+            <GradientButton
+              label="Ajouter à mon Circle of Six"
+              onPress={handleAdd}
+              loading={saving}
+              style={styles.modalCta}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </LinearGradient>
   );
 }
 
-const CARD_SIZE = 168;
-
 const styles = StyleSheet.create({
   bg: { flex: 1, overflow: 'hidden' },
-  safe: { flex: 1, backgroundColor: '#1a0b2e' },
+  safe: { flex: 1, backgroundColor: Colors.bgDeep },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -206,88 +320,151 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
   subtitle: { fontSize: 12, color: Colors.textMuted, marginTop: 4, lineHeight: 17 },
 
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36 },
-  loadingText: { color: Colors.textMuted, marginTop: 14, fontSize: 14 },
-  emptyEmoji: { fontSize: 52, marginBottom: 16 },
-  emptyTitle: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary, textAlign: 'center', marginBottom: 8 },
-  emptyText: { fontSize: 13.5, color: Colors.textSecondary, textAlign: 'center', lineHeight: 19 },
-  retryBtn: {
-    marginTop: 18,
-    paddingHorizontal: 22,
-    paddingVertical: 11,
-    borderRadius: Radius.full,
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+
+  scroll: { paddingHorizontal: Spacing.xl, paddingBottom: Spacing.xxxl },
+
+  introCard: {
+    flexDirection: 'row',
+    gap: Spacing.base,
+    alignItems: 'center',
     backgroundColor: Colors.glassBg,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    borderRadius: Radius.lg,
+    padding: Spacing.base,
+    marginBottom: Spacing.lg,
   },
-  retryText: { color: Colors.textPrimary, fontWeight: '600', fontSize: 13.5 },
-
-  grid: { paddingHorizontal: Spacing.xl, paddingBottom: 32, paddingTop: 4 },
-  row: { gap: 12, marginBottom: 12 },
-
-  card: {
-    width: CARD_SIZE,
-    backgroundColor: Colors.glassBg,
-    borderWidth: 1,
-    borderColor: Colors.glassBorder,
-    borderRadius: Radius.xl,
-    overflow: 'hidden',
-    alignItems: 'center',
-    paddingBottom: 14,
-  },
-  accentBar: { width: '100%', height: 3 },
-  cardHalo: {
-    width: '100%',
-    alignItems: 'center',
-    paddingTop: 14,
-    paddingBottom: 6,
-  },
-  cardAvatarWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.25)',
-    overflow: 'hidden',
-    backgroundColor: Colors.bgSurface,
-  },
-  cardAvatar: { width: '100%', height: '100%' },
-  verifiedBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: Colors.bgDeep,
+  introIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: Radius.md,
+    backgroundColor: 'rgba(219,39,119,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardBody: { width: '100%', paddingHorizontal: 12, paddingTop: 8, gap: 4 },
-  cardName: { fontSize: 13.5, fontWeight: '700', color: Colors.textPrimary, textAlign: 'center' },
-  cardLocation: { flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' },
-  cardLocationText: { fontSize: 11, color: Colors.textMuted },
-  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center', marginTop: 2 },
-  scoreText: { fontSize: 11.5, fontWeight: '700', color: '#F59E0B' },
-  hints: { fontSize: 10.5, color: Colors.textMuted, textAlign: 'center', fontStyle: 'italic' },
-  tagsRow: { marginTop: 4 },
-  tag: {
-    backgroundColor: 'rgba(124,58,237,0.2)',
-    borderWidth: 1,
-    borderColor: Colors.accentPurple,
-    borderRadius: Radius.full,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginRight: 6,
+  introText: { flex: 1, fontSize: 13, lineHeight: 18, color: Colors.textSecondary },
+
+  sectionLabel: {
+    ...Typography.caption,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
   },
-  tagText: { fontSize: 10, color: Colors.textPrimary, fontWeight: '500' },
-  likeBtn: { marginTop: 8 },
-  likeBtnDone: { opacity: 0.85 },
-  likeBtnGradient: {
-    borderRadius: Radius.full,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+
+  actionsRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.lg },
+  actionCard: {
+    flex: 1,
     alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.glassBg,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    borderRadius: Radius.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.sm,
   },
-  likeBtnText: { fontSize: 12.5, fontWeight: '700', color: '#fff' },
+  actionDisabled: { opacity: 0.4 },
+  actionIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+
+  contactsHeader: { marginTop: Spacing.md },
+
+  emptyBox: {
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderStyle: 'dashed',
+    borderRadius: Radius.lg,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.base,
+    backgroundColor: Colors.glassBg,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  contactAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.accentPurple,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactInitial: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  contactBody: { flex: 1, gap: 3 },
+  contactName: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
+  contactPhoneRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  contactPhone: { fontSize: 12.5, color: Colors.textMuted },
+  removeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.md,
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.accentPink,
+    borderRadius: Radius.full,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.xs,
+  },
+  addText: { fontSize: 14, fontWeight: '600', color: Colors.accentPink },
+
+  modalRoot: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  modalCard: {
+    backgroundColor: Colors.bgMid,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    padding: Spacing.xl,
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.xs,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
+  },
+  modalTitle: { ...Typography.h3, fontSize: 17 },
+  modalCta: { marginTop: Spacing.base },
 });

@@ -34,7 +34,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signInWithCredentials(email.trim(), password);
-      router.replace('/(app)/(tabs)/discover');
+      router.replace('/(app)/(tabs)/accueil');
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -51,7 +51,7 @@ export default function LoginScreen() {
     setProviderLoading(provider);
     try {
       await signInWithProvider(provider);
-      router.replace('/(app)/(tabs)/discover');
+      router.replace('/(app)/(tabs)/accueil');
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Connexion impossible pour le moment.');
     } finally {

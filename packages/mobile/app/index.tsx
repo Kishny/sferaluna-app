@@ -29,7 +29,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
  *    connectée d'un lancement à l'autre. Tant qu'elle ne se déconnecte pas
  *    explicitement (lib/auth.ts → signOut), elle n'a pas à se reconnecter.
  */
-type Destination = '/(app)/(tabs)/discover' | '/(auth)/onboarding' | '/(auth)/login';
+type Destination = '/(app)/(tabs)/accueil' | '/(auth)/onboarding' | '/(auth)/login';
 
 /**
  * Résout la destination ET expose, via le callback `onBiometricPrompt`, le
@@ -60,7 +60,7 @@ async function resolveDestination(
   try {
     const session = await getSession();
     if (!session) return '/(auth)/onboarding';
-    return '/(app)/(tabs)/discover';
+    return '/(app)/(tabs)/accueil';
   } catch {
     // Session invalide / expirée / pas de réseau → on repart de l'onboarding,
     // l'utilisatrice pourra se reconnecter normalement.
