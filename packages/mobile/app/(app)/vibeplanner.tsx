@@ -134,7 +134,7 @@ function NewPlanModal({ visible, onClose }: { visible: boolean; onClose: () => v
 
   const createMutation = useMutation({
     mutationFn: () => {
-      if (!matchId) throw new Error('Choisissez un match.');
+      if (!matchId) throw new Error('Choisissez une membre.');
       return import('../../lib/api').then((m) =>
         m.createVibePlan({
           matchId,
@@ -168,7 +168,7 @@ function NewPlanModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {matches.length === 0 ? (
-                  <Text style={{ color: Colors.textMuted, fontSize: 13 }}>Aucun match pour l'instant.</Text>
+                  <Text style={{ color: Colors.textMuted, fontSize: 13 }}>Aucune connexion pour l'instant.</Text>
                 ) : matches.map((m) => (
                   <TouchableOpacity
                     key={m.matchId}
@@ -263,7 +263,7 @@ export default function VibePlannerScreen() {
           </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>VibePlanner</Text>
-            <Text style={styles.subtitle}>Proposez et organisez vos rendez-vous</Text>
+            <Text style={styles.subtitle}>Proposez et organisez vos sorties</Text>
           </View>
           <TouchableOpacity style={styles.newBtn} onPress={() => setShowNew(true)} activeOpacity={0.8}>
             <LinearGradient colors={[Colors.accentPurple, Colors.accentPink]} style={styles.newBtnGradient}>
@@ -303,7 +303,7 @@ export default function VibePlannerScreen() {
                 <Text style={styles.emptyEmoji}>✨</Text>
                 <Text style={styles.emptyTitle}>Aucun plan pour l'instant</Text>
                 <Text style={styles.emptyText}>
-                  Proposez une activité à l'une de vos rencontres — café, balade, appel vidéo…
+                  Proposez une activité à l'une de vos connexions — café, balade, appel vidéo…
                 </Text>
                 <TouchableOpacity style={styles.retryBtn} onPress={() => setShowNew(true)} activeOpacity={0.8}>
                   <Text style={styles.retryText}>Proposer un plan</Text>

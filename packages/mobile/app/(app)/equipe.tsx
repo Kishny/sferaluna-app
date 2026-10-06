@@ -86,7 +86,7 @@ export default function EquipeScreen() {
           >
             <MoonStars size={22} color={Colors.accentPink} weight="regular" />
             <Text style={styles.missionText}>
-              Nous construisons une expérience de rencontres plus sûre, plus humaine et plus élégante pour les femmes.
+              Nous construisons une communauté plus sûre, plus humaine et plus élégante pour les femmes.
             </Text>
           </LinearGradient>
 

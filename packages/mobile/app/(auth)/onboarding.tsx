@@ -28,13 +28,13 @@ const slides: Slide[] = [
     id: '1',
     logo: true,
     title: 'Bienvenue sur SferaLuna',
-    subtitle: 'L\'application de rencontre conçue pour les femmes qui cherchent une relation authentique et profonde.',
+    subtitle: 'La communauté vérifiée des femmes de 28 ans et plus : échanger, s’entraider, sortir, et créer des liens sincères.',
   },
   {
     id: '2',
     emoji: '✨',
     title: 'Des connexions sincères',
-    subtitle: 'Rencontrez des personnes qui partagent vos valeurs. Qualité plutôt que quantité — pour des liens qui durent.',
+    subtitle: 'Un fil d’humeurs, de l’entraide, des événements, et des membres avec qui échanger. Qualité plutôt que quantité.',
   },
   {
     id: '3',

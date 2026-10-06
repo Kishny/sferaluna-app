@@ -40,7 +40,7 @@ function timeValue(match: MatchSummary): number {
 
 /** Petite enveloppe qui ajoute un retour tactile (scale spring) à n'importe
  * quel élément pressable — via l'API Animated du cœur RN, compatible web
- * (voir la note dans SwipeCard.tsx : reanimated casse la prévisualisation). */
+ * (reanimated casse la prévisualisation web). */
 function Pressy({
   children, onPress, style,
 }: { children: React.ReactNode; onPress: () => void; style?: any }) {
@@ -83,9 +83,9 @@ function HaloAvatar({
 
 const MOON_THOUGHTS_EMPTY = [
   "Vos prochaines conversations n'attendent qu'un premier mot.",
-  "Une rencontre commence souvent par un simple « bonjour ».",
-  'Chaque match est une porte entrouverte — entrez avec douceur.',
-  "Aucune urgence : les belles histoires prennent leur temps.",
+  "Une conversation commence souvent par un simple « bonjour ».",
+  'Chaque nouvelle connexion est une porte entrouverte — entrez avec douceur.',
+  "Aucune urgence : les vrais échanges prennent leur temps.",
 ];
 
 export default function MessagesScreen() {
@@ -158,9 +158,9 @@ export default function MessagesScreen() {
           </View>
           <Text style={styles.subtitle}>
             {newMatches.length > 0
-              ? `${newMatches.length} nouvelle${newMatches.length > 1 ? 's' : ''} rencontre${newMatches.length > 1 ? 's' : ''} ${newMatches.length > 1 ? 'attendent' : 'attend'} un premier mot`
+              ? `${newMatches.length} nouvelle${newMatches.length > 1 ? 's' : ''} connexion${newMatches.length > 1 ? 's' : ''} ${newMatches.length > 1 ? 'attendent' : 'attend'} un premier mot`
               : hasAnyConversation
-                ? 'Vos histoires continuent ici, à votre rythme'
+                ? 'Vos conversations continuent ici, à votre rythme'
                 : 'Vos futures conversations apparaîtront ici'}
           </Text>
 
@@ -187,7 +187,7 @@ export default function MessagesScreen() {
           <View style={styles.matchesSection}>
             <View style={styles.sectionHeaderRow}>
               <Sparkle size={14} color={Colors.accentPink} weight="fill" />
-              <Text style={styles.sectionTitle}>Nouveaux matchs</Text>
+              <Text style={styles.sectionTitle}>Nouvelles connexions</Text>
             </View>
             <FlatList
               horizontal
@@ -239,7 +239,7 @@ export default function MessagesScreen() {
               <Text style={styles.emptyText}>
                 {searchActive
                   ? `Aucune conversation ne correspond à « ${search.trim()} ».`
-                  : 'Likez des profils dans Découverte pour créer vos premiers matchs — ils apparaîtront ici, prêts à devenir de belles histoires.'}
+                  : 'Quand une membre accepte votre invitation, ou vous la sienne, votre conversation apparaît ici.'}
               </Text>
               {!searchActive && (
                 <View style={styles.thoughtBanner}>
@@ -248,9 +248,9 @@ export default function MessagesScreen() {
                 </View>
               )}
               {!searchActive && (
-                <TouchableOpacity style={styles.discoverBtn} onPress={() => router.push('/(app)/(tabs)/discover')}>
+                <TouchableOpacity style={styles.discoverBtn} onPress={() => router.push('/(app)/(tabs)/membres')}>
                   <Sparkle size={16} color="#fff" weight="fill" />
-                  <Text style={styles.discoverBtnText}>Découvrir des profils</Text>
+                  <Text style={styles.discoverBtnText}>Parcourir les membres</Text>
                 </TouchableOpacity>
               )}
             </View>

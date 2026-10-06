@@ -1,29 +1,18 @@
 /**
- * Accueil — hub communauté & sécurité.
+ * Accueil — hub de la communauté.
  *
- * C'est désormais le PREMIER écran de l'app (à la place du swipe de découverte,
- * relégué à une carte secondaire, cf. (tabs)/_layout.tsx où `discover` est en
- * href:null). Deux objectifs :
- *
- * 1. Différenciation 4.3(b) : ce que voit le reviewer en ouvrant l'app, ce
- *    n'est plus un deck de profils « façon app de rencontre générique », mais un
- *    espace communauté + sécurité (Circle of Six, VibeSphere, VibeMentor,
- *    VibePlanner, Événements Luna).
- * 2. Découvrabilité : ces écrans existaient mais n'étaient liés depuis nulle
- *    part dans la navigation. Ils sont ici mis en avant.
- *
- * La découverte de profils vérifiés reste accessible (carte en bas), mais n'est
- * plus la vitrine de l'app.
+ * Premier écran de l'app : profil vérifié, sécurité (Circle of Six),
+ * communauté (VibeSphere, VibeMentor, VibePlanner), événements Luna, puis
+ * l'annuaire des membres et les affinités de la semaine.
  */
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import {
-  MoonStars, ShieldCheck, UsersThree, Lightbulb, CalendarBlank,
-  Sparkle, Heart, CaretRight, SealCheck,
+  MoonStars, ShieldCheck, UsersThree, Lightbulb, CalendarBlank, Sparkle, CaretRight, SealCheck,
 } from 'phosphor-react-native';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { OrbitGlow } from '../../../components/OrbitGlow';
@@ -76,38 +65,6 @@ export default function AccueilScreen() {
     typeof data?.user.pseudonyme === 'string' && data.user.pseudonyme
       ? data.user.pseudonyme
       : null;
-
-  // Halo pulsé derrière la carte « Découvrir & matcher » : attire l'œil sur le
-  // point d'entrée des rencontres sans en faire la vitrine de l'app. Opacity +
-  // useNativeDriver → compatible react-native-web, pas de reanimated.
-  const glow = useRef(new Animated.Value(0.4)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glow, { toValue: 0.85, duration: 1300, useNativeDriver: true }),
-        Animated.timing(glow, { toValue: 0.4, duration: 1300, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [glow]);
-
-  // Battement de cœur « lub-dub » sur l'icône de la carte rencontres, puis
-  // pause. Transform scale + useNativeDriver → fluide et compatible web.
-  const beat = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(beat, { toValue: 1.18, duration: 140, useNativeDriver: true }),
-        Animated.timing(beat, { toValue: 1, duration: 130, useNativeDriver: true }),
-        Animated.timing(beat, { toValue: 1.12, duration: 120, useNativeDriver: true }),
-        Animated.timing(beat, { toValue: 1, duration: 150, useNativeDriver: true }),
-        Animated.delay(850),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [beat]);
 
   return (
     <View style={styles.root}>
@@ -213,49 +170,37 @@ export default function AccueilScreen() {
             <View style={styles.itemBody}>
               <Text style={styles.itemTitle}>Événements Luna</Text>
               <Text style={styles.itemSubtitle}>
-                Rencontres et sorties organisées par la communauté
+                Sorties et ateliers organisés par la communauté
               </Text>
             </View>
             <CaretRight size={18} color={Colors.textMuted} weight="bold" />
           </TouchableOpacity>
 
-          {/* Découverte — CTA rencontres, mis en avant (halo pulsé + dégradé)
-              pour que les membres identifient clairement où « matcher ». */}
-          <Text style={styles.sectionLabel}>Faire des rencontres</Text>
-          <View style={styles.discoverWrap}>
-            <Animated.View
-              style={[styles.discoverGlow, { opacity: glow }]}
-              pointerEvents="none"
-            />
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => router.push('/(app)/(tabs)/discover')}
+          {/* Annuaire des membres. */}
+          <Text style={styles.sectionLabel}>Les membres</Text>
+          <TouchableOpacity
+            style={styles.item}
+            activeOpacity={0.8}
+            onPress={() => router.push('/(app)/(tabs)/membres')}
+          >
+            <LinearGradient
+              colors={[Colors.accentPurple, Colors.accentPink]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.itemIcon}
             >
-              <LinearGradient
-                colors={['#F43F5E', '#DB2777']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.discoverCard}
-              >
-                <View style={styles.discoverIcon}>
-                  <Animated.View style={{ transform: [{ scale: beat }] }}>
-                    <Heart size={28} color={Colors.textPrimary} weight="fill" />
-                  </Animated.View>
-                </View>
-                <View style={styles.safetyBody}>
-                  <Text style={styles.safetyTitle}>Découvrir &amp; matcher</Text>
-                  <Text style={styles.safetySubtitle}>
-                    Likez les profils vérifiés qui vous plaisent — c'est ici que
-                    les rencontres commencent.
-                  </Text>
-                </View>
-                <CaretRight size={22} color={Colors.textPrimary} weight="bold" />
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+              <UsersThree size={22} color={Colors.textPrimary} weight="bold" />
+            </LinearGradient>
+            <View style={styles.itemBody}>
+              <Text style={styles.itemTitle}>Parcourir les membres</Text>
+              <Text style={styles.itemSubtitle}>
+                Des profils vérifiés à lire à votre rythme, avec qui vous connecter
+              </Text>
+            </View>
+            <CaretRight size={18} color={Colors.textMuted} weight="bold" />
+          </TouchableOpacity>
 
-          {/* Lien secondaire vers la sélection hebdo (ancien « Circle of Six »
-              matching, renommé Affinités). Discret, pour ne pas surcharger. */}
+          {/* Lien secondaire vers la sélection hebdomadaire (Affinités). */}
           <TouchableOpacity
             style={styles.affinitesLink}
             activeOpacity={0.7}
@@ -374,39 +319,6 @@ const styles = StyleSheet.create({
   itemBody: { flex: 1, gap: 2 },
   itemTitle: { ...Typography.h3, fontSize: 16 },
   itemSubtitle: { fontSize: 13, lineHeight: 17, color: Colors.textSecondary },
-  discoverWrap: {
-    position: 'relative',
-  },
-  discoverGlow: {
-    position: 'absolute',
-    top: -5,
-    left: -5,
-    right: -5,
-    bottom: -5,
-    borderRadius: Radius.lg + 5,
-    backgroundColor: '#F43F5E',
-  },
-  discoverCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.base,
-    padding: Spacing.lg,
-    borderRadius: Radius.lg,
-    // Lueur rose (iOS) — renforce l'effet « à ne pas manquer ».
-    shadowColor: '#F43F5E',
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
-  },
-  discoverIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: Radius.full,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   affinitesLink: {
     flexDirection: 'row',
     alignItems: 'center',

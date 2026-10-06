@@ -12,11 +12,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
 import {
-  ArrowLeft, SealCheck, Heart, ChatCircleText, Flag, Prohibit,
+  ArrowLeft, SealCheck, Heart, UserPlus, ChatCircleText, Flag, Prohibit,
   MapPin, Sparkle, MoonStars,
 } from 'phosphor-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
+import { intentionLabels } from '../../../lib/intentions';
 import { fetchPublicProfile, likeProfile, fetchMatches, recordProfileVisit, blockUser } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
@@ -136,7 +137,7 @@ export default function PublicProfileScreen() {
   const age = profile.age;
   const city = profile.localisation;
   const tags = profile.interets ?? [];
-  const intentions = profile.intentions ?? [];
+  const intentions = intentionLabels(profile.intentions);
   const bio = profile.bio;
   const orientation = profile.orientation;
   const verified = profile.identityVerified;
@@ -234,9 +235,9 @@ export default function PublicProfileScreen() {
                   colors={likeMutation.isSuccess ? ['#16a34a', '#15803d'] : [Colors.accentPurple, Colors.accentPink]}
                   style={styles.actionBtnGradient}
                 >
-                  <NP><Heart size={17} color="#fff" weight="fill" />
+                  <NP><UserPlus size={17} color="#fff" weight="fill" />
                   </NP><Text style={styles.actionBtnText}>
-                    {likeMutation.isSuccess ? "Like envoyé !" : likeMutation.isPending ? "…" : "Liker ce profil"}
+                    {likeMutation.isSuccess ? "Invitation envoyée" : likeMutation.isPending ? "…" : "Se connecter"}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -248,7 +249,7 @@ export default function PublicProfileScreen() {
             <View style={styles.card}>
               <View style={styles.cardTitleRow}>
                 <Sparkle size={14} color={Colors.accentPink} weight="regular" />
-                <Text style={styles.cardTitle}>Je recherche</Text>
+                <Text style={styles.cardTitle}>Ici pour</Text>
               </View>
               <View style={styles.tagRow}>
                 {intentions.map((i) => (

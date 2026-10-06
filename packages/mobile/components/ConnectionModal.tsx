@@ -13,19 +13,18 @@ import { hapticLight } from '../lib/haptics';
 interface Props {
   visible: boolean;
   myImage?: string;
-  matchImage?: string;
-  matchName?: string;
+  memberImage?: string;
+  memberName?: string;
   onSendMessage: () => void;
   onContinue: () => void;
 }
 
 /**
- * Célébration de match mutuel — moment fort qui ancre l'envie de revenir
- * sur l'app : on veut que l'utilisatrice ait hâte d'écrire à sa nouvelle
- * rencontre plutôt que de simplement continuer à swiper.
+ * Affichée quand une invitation est réciproque : les deux membres sont
+ * connectées et la messagerie s'ouvre entre elles.
  */
-export function MatchModal({
-  visible, myImage, matchImage, matchName, onSendMessage, onContinue,
+export function ConnectionModal({
+  visible, myImage, memberImage, memberName, onSendMessage, onContinue,
 }: Props) {
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onContinue}>
@@ -44,12 +43,12 @@ export function MatchModal({
             <Sparkle size={18} color={Colors.accentPurple} weight="fill" />
           </View>
 
-          <Text style={styles.title}>C'est un match !</Text>
+          <Text style={styles.title}>Vous êtes connectées</Text>
           <Text style={styles.subtitle}>
-            {matchName
-              ? `Vous et ${matchName} vous êtes plu mutuellement.`
-              : 'Vous vous êtes plu mutuellement.'}
-            {'\n'}Le moment est idéal pour faire le premier pas.
+            {memberName
+              ? `${memberName} et vous avez accepté de vous connecter.`
+              : 'Votre invitation est réciproque.'}
+            {'\n'}Vous pouvez maintenant vous écrire.
           </Text>
 
           <View style={styles.avatarsRow}>
@@ -60,7 +59,7 @@ export function MatchModal({
               <Text style={styles.heartEmoji}>💫</Text>
             </View>
             <View style={[styles.avatarRing, styles.avatarRight]}>
-              <AvatarPlaceholder uri={matchImage} name={matchName} size={86} />
+              <AvatarPlaceholder uri={memberImage} name={memberName} size={86} />
             </View>
           </View>
 
@@ -71,7 +70,7 @@ export function MatchModal({
           />
           <TouchableOpacity onPress={() => { hapticLight(); onContinue(); }} activeOpacity={0.7} style={styles.continueBtn}>
             <NP><ChatCircleDots size={16} color={Colors.textSecondary} />
-            </NP><Text style={styles.continueText}>Continuer à explorer</Text>
+            </NP><Text style={styles.continueText}>Plus tard</Text>
           </TouchableOpacity>
         </LinearGradient>
       </View>

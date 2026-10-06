@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
 import {
-  Heart, ChatCircle, Eye, CheckCircle, MoonStars, BellRinging, SealCheck,
+  UsersThree, ChatCircle, Eye, CheckCircle, MoonStars, BellRinging, SealCheck,
 } from 'phosphor-react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
@@ -40,7 +40,7 @@ function formatSince(iso?: string): string {
 }
 
 /** Petite enveloppe "retour tactile" via Animated du cœur RN (spring scale) —
- * voir la note dans SwipeCard.tsx : reanimated casse la prévisualisation web. */
+ * reanimated casse la prévisualisation web (fonctions JSI absentes de react-native-web). */
 function Pressy({
   children, onPress, style, disabled,
 }: { children: React.ReactNode; onPress?: () => void; style?: any; disabled?: boolean }) {
@@ -105,10 +105,10 @@ export default function NotificationsScreen() {
         },
         {
           id: 'matches',
-          icon: <NP><Heart size={22} color="#fff" weight="fill" /></NP>,
+          icon: <NP><UsersThree size={22} color="#fff" weight="fill" /></NP>,
           gradient: [Colors.accentPurple, Colors.accentPink] as const,
-          label: 'Nouveaux matchs',
-          hint: 'Une affinité mutuelle vient de naître',
+          label: 'Nouvelles connexions',
+          hint: 'Une membre a accepté de se connecter avec vous',
           count: data.newMatches,
           onPress: () => router.push('/(app)/(tabs)/messages'),
         },
@@ -117,7 +117,7 @@ export default function NotificationsScreen() {
           icon: <Eye size={22} color="#fff" weight="fill" />,
           gradient: ['#DB2777', '#F59E0B'] as const,
           label: 'Nouvelles visites de profil',
-          hint: 'Quelqu’un s’intéresse à vous',
+          hint: 'Des membres ont consulté votre profil',
           count: data.newVisits,
           onPress: () => router.push('/(app)/(tabs)/profile'),
         },
@@ -196,7 +196,7 @@ export default function NotificationsScreen() {
               <Text style={styles.emptyTitle}>Tout est calme par ici</Text>
               <Text style={styles.emptyText}>
                 Vous serez prévenue dès qu'il se passe quelque chose de nouveau —
-                messages, matchs ou visites de profil.
+                messages, connexions ou visites de profil.
               </Text>
               <View style={styles.thoughtBanner}>
                 <Text style={styles.thoughtEmoji}>🌙</Text>

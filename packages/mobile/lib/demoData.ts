@@ -454,7 +454,7 @@ export const demoEvents: LunaEvent[] = [
   },
   {
     _id: 'demo-event-2',
-    title: 'Atelier Photographie & Rencontres',
+    title: 'Atelier photographie',
     description: "Balade photo dans le Vieux-Bordeaux suivie d'un brunch. Un cadre doux pour créer des liens sincères.",
     date: inDays(13), location: 'Place de la Bourse, Bordeaux',
     capacity: 20, registeredCount: 14, isRegistered: false,

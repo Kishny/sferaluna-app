@@ -19,7 +19,7 @@ const FAQ: FaqSection[] = [
     items: [
       {
         q: "Qui peut s'inscrire sur SferaLuna ?",
-        a: "SferaLuna est réservé aux femmes de 28 ans et plus cherchant des rencontres authentiques et sécurisées. L'accès est contrôlé pour garantir la qualité de la communauté.",
+        a: "SferaLuna est réservé aux femmes de 28 ans et plus qui cherchent une communauté authentique et sécurisée. L'accès est contrôlé pour garantir la qualité de la communauté.",
       },
       {
         q: "Comment compléter mon profil ?",
@@ -36,20 +36,20 @@ const FAQ: FaqSection[] = [
     ],
   },
   {
-    title: 'Matchs & messages',
-    emoji: '💕',
+    title: 'Connexions & messages',
+    emoji: '🤝',
     items: [
       {
-        q: "Comment se forment les matchs ?",
-        a: "Un match se crée lorsque deux utilisatrices se likent mutuellement dans l'écran Découverte. Vous recevez alors une notification et un accès à la messagerie privée.",
+        q: "Comment se connecter avec une membre ?",
+        a: "Depuis l'annuaire des membres ou un profil, « Se connecter » envoie une invitation. Quand elle est réciproque, vous êtes connectées : vous recevez une notification et la messagerie privée s'ouvre.",
       },
       {
-        q: "Combien de likes puis-je envoyer par jour ?",
-        a: "Le plan Gratuit est limité à 5 likes/jour. Les abonnements Essentiel, Premium et Elite offrent des quotas augmentés ou illimités.",
+        q: "Combien d'invitations puis-je envoyer par jour ?",
+        a: "Le plan Gratuit est limité à 5 invitations par jour. Les abonnements Essentiel, Premium et Elite offrent des quotas augmentés ou illimités.",
       },
       {
         q: "Mes messages sont-ils privés ?",
-        a: "Oui. Les messages ne sont accessibles qu'aux deux personnes matchées. SferaLuna ne lit pas vos conversations.",
+        a: "Oui. Les messages ne sont accessibles qu'aux deux membres connectées. SferaLuna ne lit pas vos conversations.",
       },
       {
         q: "Que faire si je ne reçois pas de réponse ?",
@@ -97,7 +97,7 @@ const FAQ: FaqSection[] = [
       },
       {
         q: "Comment supprimer mon compte ?",
-        a: "Depuis Réglages → Compte → Supprimer mon compte. La suppression est définitive et entraîne la perte de tous vos matchs et messages.",
+        a: "Depuis Réglages → Compte → Supprimer mon compte. La suppression est définitive et entraîne la perte de toutes vos connexions et de vos messages.",
       },
     ],
   },

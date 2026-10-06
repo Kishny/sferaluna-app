@@ -80,14 +80,13 @@ export default function TabsLayout() {
           tabBarIcon: (props) => <HomeIcon {...props} />,
         }}
       />
-      {/* Découverte reléguée : reste une route navigable (depuis le hub Accueil
-          et l'écran Messages) mais n'est plus un onglet de la barre — le swipe
-          n'est plus la vitrine de l'app (différenciation 4.3b). */}
+      {/* Annuaire des membres : route navigable depuis le hub Accueil et
+          l'écran Messages, sans onglet dédié dans la barre. */}
       <Tabs.Screen
-        name="discover"
+        name="membres"
         options={{
           href: null,
-          title: 'Découvrir',
+          title: 'Membres',
           tabBarIcon: (props) => <DiscoverIcon {...props} />,
         }}
       />

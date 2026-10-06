@@ -19,6 +19,7 @@ import { GlassCard } from '../../../components/GlassCard';
 import { GlassInput } from '../../../components/GlassInput';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
 import { fetchMyProfile, updateMyProfile, uploadAvatar, uploadPhoto, deletePhoto, fetchVisitors, ProfileVisitor } from '../../../lib/api';
+import { intentionLabels } from '../../../lib/intentions';
 import { getPlanLabel } from '../../../lib/auth';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
@@ -289,7 +290,7 @@ export default function ProfileScreen() {
   const pseudonyme = asString(user.pseudonyme) || 'Vous';
   const age = typeof user.age === 'number' ? user.age : undefined;
   const avatarUri = asString(user.image);
-  const intentions = asStringArray(user.intentions);
+  const intentions = intentionLabels(asStringArray(user.intentions));
   const orientation = asString(user.orientation);
   const secretQuestion = asString(user.question);
   const secretAnswer = asString(user.reponse);
@@ -548,7 +549,7 @@ export default function ProfileScreen() {
                   <View style={styles.sectionIcon}>
                     <NP><Heart size={16} color={Colors.accentPink} weight="regular" />
                   </NP></View>
-                  <Text style={styles.sectionTitle}>Je recherche</Text>
+                  <Text style={styles.sectionTitle}>Ici pour</Text>
                 </View>
                 <View style={styles.tagsGrid}>
                   {intentions.map((tag) => (

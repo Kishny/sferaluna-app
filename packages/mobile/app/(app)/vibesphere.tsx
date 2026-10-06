@@ -38,7 +38,7 @@ const MOOD_COLORS: Record<VibeMood, string> = {
   mystérieuse:  '#7C3AED',
 };
 
-/** Retour tactile léger via Animated core RN (pas reanimated — voir SwipeCard). */
+/** Retour tactile léger via Animated core RN (pas reanimated, qui casse la prévisualisation web). */
 function Pressy({ children, onPress, style }: { children: React.ReactNode; onPress: () => void; style?: any }) {
   const scale = useRef(new Animated.Value(1)).current;
   const pi = () => Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, friction: 8, tension: 220 }).start();

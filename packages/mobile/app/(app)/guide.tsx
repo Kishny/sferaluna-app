@@ -12,23 +12,23 @@ import { NP } from '../../components/NP';
 const STEPS = [
   {
     step: '01', emoji: '🌸', title: 'Soignez votre profil',
-    body: "Ajoutez une photo authentique, rédigez une bio qui vous ressemble et précisez vos intentions. Un profil complet multiplie par 3 vos chances d'apparaître dans les Affinités de la semaine des autres membres.",
+    body: "Ajoutez une photo authentique, rédigez une bio qui vous ressemble et indiquez vos centres d'intérêt. Un profil complet aide les autres membres à vous connaître avant de vous écrire.",
   },
   {
-    step: '02', emoji: '🔍', title: 'Explorez Découverte',
-    body: "Glissez à droite pour liker, à gauche pour passer. Utilisez les filtres (âge, localisation, intentions) pour affiner votre recherche. Chaque like est discret — seul un match mutuel vous le révèle.",
+    step: '02', emoji: '🔍', title: 'Parcourez les membres',
+    body: "Ouvrez un profil pour le lire en entier, et utilisez les filtres (âge, localisation, intentions) pour affiner. « Se connecter » envoie une invitation discrète : elle n'est révélée que si l'autre membre vous invite aussi.",
   },
   {
-    step: '03', emoji: '💕', title: 'Célébrez vos matchs',
-    body: "Un match se forme quand deux personnes se likent mutuellement. Vous recevez une alerte immédiate. C'est le signal pour engager la conversation — un simple « bonjour » suffit souvent.",
+    step: '03', emoji: '🤝', title: 'Vos connexions',
+    body: "Une connexion se crée quand deux membres s'invitent mutuellement. Vous recevez une alerte, et la messagerie s'ouvre entre vous — un simple « bonjour » suffit souvent.",
   },
   {
     step: '04', emoji: '💬', title: 'Osez le premier message',
-    body: "Ne restez pas sur le match seul. Posez une question ouverte sur leur bio, leurs centres d'intérêt ou leur humeur du jour dans VibeSphere. L'authenticité prime toujours sur la perfection.",
+    body: "Posez une question ouverte sur sa bio, ses centres d'intérêt ou son humeur du jour dans VibeSphere. L'authenticité prime toujours sur la perfection.",
   },
   {
     step: '05', emoji: '✨', title: 'Rejoignez la communauté',
-    body: "VibeSphere, VibeMentor, les événements Luna… SferaLuna est bien plus qu'une app de rencontre. Participez à la communauté pour rencontrer des personnes partageant vos valeurs.",
+    body: "VibeSphere, VibeMentor, les événements Luna… La communauté est le cœur de SferaLuna. Publiez, répondez, participez : c'est là que les liens se créent.",
   },
   {
     step: '06', emoji: '🌙', title: 'Proposez un plan',
@@ -68,7 +68,7 @@ export default function GuideScreen() {
           >
             <MoonStars size={24} color={Colors.accentPink} weight="regular" />
             <Text style={styles.introText}>
-              Bienvenue sur SferaLuna — un espace pensé pour les rencontres authentiques, au rythme qui vous convient.
+              Bienvenue sur SferaLuna — une communauté vérifiée, pensée pour des échanges authentiques, au rythme qui vous convient.
             </Text>
           </LinearGradient>
 

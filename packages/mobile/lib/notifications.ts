@@ -127,7 +127,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
     });
 
     await Notifications.setNotificationChannelAsync('matches', {
-      name: 'Nouveaux matches',
+      name: 'Nouvelles connexions',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 300, 150, 300],
       lightColor: '#ec4899',

@@ -7,8 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
 import {
-  Bell, Lock, Eye, Heart, Crown, SignOut, MoonStars,
-  CaretRight, Trash, ShieldCheck, Sparkle,
+  Bell, Lock, Eye, Crown, SignOut, MoonStars, CaretRight, Trash, ShieldCheck, Sparkle, UsersThree,
 } from 'phosphor-react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { GlassCard } from '../../../components/GlassCard';
@@ -41,7 +40,7 @@ interface SettingGroup {
 }
 
 /** Petite enveloppe "retour tactile" via Animated du cœur RN (spring scale) —
- * voir la note dans SwipeCard.tsx : reanimated casse la prévisualisation web. */
+ * reanimated casse la prévisualisation web (fonctions JSI absentes de react-native-web). */
 function Pressy({
   children, onPress, disabled, style,
 }: { children: React.ReactNode; onPress?: () => void; disabled?: boolean; style?: any }) {
@@ -166,7 +165,7 @@ export default function SettingsScreen() {
         {
           id: 'notif',
           label: 'Notifications push',
-          description: 'Messages, matchs, visites — restez informée',
+          description: 'Messages, connexions, visites — restez informée',
           icon: <Bell size={18} color="#fff" weight="fill" />,
           iconGradient: [Colors.accentPurple, Colors.mutedPurple] as const,
           type: 'toggle',
@@ -179,16 +178,16 @@ export default function SettingsScreen() {
         },
         {
           id: 'matches',
-          label: 'Alertes nouveaux matchs',
-          description: 'Soyez prévenue dès qu’une affinité naît',
-          icon: <NP><Heart size={18} color="#fff" weight="fill" /></NP>,
+          label: 'Alertes nouvelles connexions',
+          description: 'Soyez prévenue dès qu’une membre se connecte avec vous',
+          icon: <NP><UsersThree size={18} color="#fff" weight="fill" /></NP>,
           iconGradient: [Colors.accentPink, '#F59E0B'] as const,
           type: 'toggle',
           value: matches,
           onToggle: (v: boolean) => {
             hapticMedium();
             setMatches(v);
-            showToast(v ? 'Alertes nouveaux matchs activées' : 'Alertes nouveaux matchs désactivées', 'success');
+            showToast(v ? 'Alertes nouvelles connexions activées' : 'Alertes nouvelles connexions désactivées', 'success');
           },
         },
       ],

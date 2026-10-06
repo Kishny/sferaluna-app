@@ -38,7 +38,7 @@ function AffinityCard({ profile, index }: { profile: CircleProfile; index: numbe
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['affinites'] }),
   });
 
-  const tags = [...(profile.intentions ?? []), ...(profile.interets ?? [])].slice(0, 3);
+  const tags = (profile.interets ?? []).slice(0, 3);
   const accent = ACCENT_BARS[index % ACCENT_BARS.length];
 
   return (
@@ -108,7 +108,7 @@ function AffinityCard({ profile, index }: { profile: CircleProfile; index: numbe
             style={styles.likeBtnGradient}
           >
             <Text style={styles.likeBtnText}>
-              {likeMutation.isSuccess ? '💕 Match !' : likeMutation.isPending ? '…' : "💜 J'aime"}
+              {likeMutation.isSuccess ? 'Invitation envoyée' : likeMutation.isPending ? '…' : 'Se connecter'}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -143,7 +143,7 @@ export default function AffinitesScreen() {
             <Text style={styles.subtitle}>
               {data?.weekOf
                 ? `Semaine du ${formatWeekOf(data.weekOf)} · 6 affinités choisies pour vous`
-                : '6 profils curatés chaque semaine selon vos affinités'}
+                : '6 membres proposées chaque semaine selon vos centres d’intérêt'}
             </Text>
           </View>
         </View>

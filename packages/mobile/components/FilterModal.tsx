@@ -27,11 +27,11 @@ const AGE_RANGES: { label: string; min: number; max: number }[] = [
 
 // Valeurs alignées sur src/app/inscription/steps/Step2.tsx (web)
 const INTENTIONS = [
-  { value: 'rencontre-serieuse', label: 'Rencontre sérieuse' },
   { value: 'amitie', label: 'Amitié' },
-  { value: 'aventure', label: 'Aventure' },
-  { value: 'reseautage', label: 'Réseautage' },
   { value: 'discussion', label: 'Discussion' },
+  { value: 'reseautage', label: 'Réseautage' },
+  { value: 'rencontre-serieuse', label: 'Relation sérieuse' },
+  { value: 'aventure', label: 'Aventure' },
 ];
 
 const ORIENTATIONS = [

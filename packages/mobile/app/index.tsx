@@ -69,7 +69,7 @@ async function resolveDestination(
 }
 
 export default function AppSplashScreen() {
-  const [statusLabel, setStatusLabel] = useState("L'amour sous les étoiles");
+  const [statusLabel, setStatusLabel] = useState('Un espace pour être soi');
 
   const fade = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.86)).current;

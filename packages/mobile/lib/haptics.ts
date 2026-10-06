@@ -7,9 +7,9 @@
  *
  * Dosage :
  *  light   → tap, navigation, sélection
- *  medium  → like, envoi message, toggle
+ *  medium  → invitation, envoi message, toggle
  *  heavy   → action irréversible
- *  success → match, paiement réussi
+ *  success → nouvelle connexion, paiement réussi
  *  warning → alerte
  *  error   → échec
  */
@@ -24,49 +24,40 @@ function getHaptics(): any | null {
   }
 }
 
-export function hapticLight(): void {
+/**
+ * Lance un retour haptique sans jamais faire échouer l'appelant : sur le web,
+ * expo-haptics renvoie une promesse rejetée, qu'un simple try/catch ne voit pas.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function run(fn: (h: any) => unknown): void {
   try {
     const h = getHaptics();
-    h?.impactAsync(h.ImpactFeedbackStyle.Light);
+    if (!h) return;
+    const result = fn(h) as { catch?: (onRejected: () => void) => unknown } | undefined;
+    result?.catch?.(() => {});
   } catch { /* web / non disponible */ }
+}
+
+export function hapticLight(): void {
+  run((h) => h.impactAsync(h.ImpactFeedbackStyle.Light));
 }
 
 export function hapticMedium(): void {
-  try {
-    const h = getHaptics();
-    h?.impactAsync(h.ImpactFeedbackStyle.Medium);
-  } catch { /* web / non disponible */ }
+  run((h) => h.impactAsync(h.ImpactFeedbackStyle.Medium));
 }
 
 export function hapticHeavy(): void {
-  try {
-    const h = getHaptics();
-    h?.impactAsync(h.ImpactFeedbackStyle.Heavy);
-  } catch { /* web / non disponible */ }
+  run((h) => h.impactAsync(h.ImpactFeedbackStyle.Heavy));
 }
 
 export function hapticSuccess(): void {
-  try {
-    const h = getHaptics();
-    h?.notificationAsync(h.NotificationFeedbackType.Success);
-  } catch { /* web / non disponible */ }
+  run((h) => h.notificationAsync(h.NotificationFeedbackType.Success));
 }
 
 export function hapticWarning(): void {
-  try {
-    const h = getHaptics();
-    h?.notificationAsync(h.NotificationFeedbackType.Warning);
-  } catch { /* web / non disponible */ }
+  run((h) => h.notificationAsync(h.NotificationFeedbackType.Warning));
 }
 
 export function hapticError(): void {
-  try {
-    const h = getHaptics();
-    h?.notificationAsync(h.NotificationFeedbackType.Error);
-  } catch { /* web / non disponible */ }
-}
-
-/** Like → Medium, Pass → Light */
-export function hapticSwipeRelease(liked: boolean): void {
-  if (liked) hapticMedium(); else hapticLight();
+  run((h) => h.notificationAsync(h.NotificationFeedbackType.Error));
 }

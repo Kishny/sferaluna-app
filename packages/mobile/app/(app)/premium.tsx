@@ -59,7 +59,7 @@ const plans: PlanConfig[] = [
     features: [
       'Profil visible',
       'Suggestions compatibles',
-      'Messages avec vos matchs',
+      'Messages avec vos connexions',
       'Accès au journal émotionnel',
       'Sécurité standard',
     ],
@@ -73,7 +73,7 @@ const plans: PlanConfig[] = [
     highlighted: true,
     description: 'Pour profiter pleinement de SferaLuna.',
     features: [
-      'Likes illimités',
+      'Invitations illimitées',
       'Messages prioritaires',
       'Filtres avancés',
       'Mode Fantôme (navigation invisible)',
@@ -87,7 +87,7 @@ const plans: PlanConfig[] = [
     price: '34,99 €',
     per: '/ mois',
     badge: 'VIP',
-    description: "L'expérience haut de gamme pour maximiser vos rencontres.",
+    description: "L'expérience la plus complète de SferaLuna.",
     features: [
       'Tout Premium inclus',
       'Boost de visibilité',
@@ -189,7 +189,7 @@ export default function PremiumScreen() {
             </View>
             <Text style={styles.heroTitle}>SferaLuna Premium</Text>
             <Text style={styles.heroSub}>
-              Vivez des rencontres sans limites.{'\n'}Chaque connexion mérite d'être saisie.
+              Profitez de toute la communauté,{'\n'}sans limites.
             </Text>
           </View>
 
