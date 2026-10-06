@@ -61,6 +61,27 @@ function fullProfile(userId: string): { success: true; profile: PublicProfileFul
  * Résout une requête en mode démo.
  * @returns la réponse fictive typée (toujours, quand DEMO_MODE est actif).
  */
+/**
+ * État d'abonnement fictif. Par défaut : abonnée Premium via l'App Store (comme
+ * demoMyProfile). EXPO_PUBLIC_DEMO_SUB=none | stripe pour voir les autres écrans.
+ */
+function demoSubscriptionStatus() {
+  const mode = process.env.EXPO_PUBLIC_DEMO_SUB;
+  const subscribed = mode !== 'none';
+  return {
+    success: true,
+    subscription: {
+      plan: subscribed ? 'premium-monthly' : 'free',
+      planLabel: subscribed ? 'Premium' : 'Gratuit',
+      isPremium: subscribed,
+      subscriptionStatus: subscribed ? 'active' : 'inactive',
+      premiumExpiresAt: subscribed ? demoMyProfile.premium.premiumExpiresAt : null,
+      source: !subscribed ? null : mode === 'stripe' ? 'stripe' : 'apple',
+      cancelAtPeriodEnd: false,
+    },
+  };
+}
+
 export function resolveDemoRequest<T>(
   path: string,
   method: string,
@@ -83,6 +104,7 @@ export function resolveDemoRequest<T>(
   // authentifiés (et donc aux captures) au lieu de l'écran de connexion.
   if (clean === '/api/auth/session') return demoSession as T;
   if (clean === '/api/users/profile') return demoMyProfile as T;
+  if (clean === '/api/subscription/status') return demoSubscriptionStatus() as T;
   if (clean === '/api/profiles') return demoProfilesResponse as T;
   if (clean.startsWith('/api/profiles/')) {
     const id = clean.slice('/api/profiles/'.length);

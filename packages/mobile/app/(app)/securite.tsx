@@ -27,7 +27,8 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing, Radius } from '../../lib/theme';
-import { fetchMyProfile, createIdentityVerificationSession, requestPasswordReset, deleteMyAccount } from '../../lib/api';
+import { fetchMyProfile, fetchSubscriptionStatus, createIdentityVerificationSession, requestPasswordReset, deleteMyAccount } from '../../lib/api';
+import { openAppleSubscriptions } from '../../lib/iap';
 import { getSession, signOut, type AuthProvider } from '../../lib/auth';
 import { ApiError, API_BASE_URL } from '../../lib/http';
 import { Toast, useToast } from '../../components/Toast';
@@ -144,11 +145,33 @@ export default function AccountSecurityScreen() {
     }
   };
 
+  // Un abonnement pris avec le compte Apple ne peut être résilié que par la
+  // membre, dans l'App Store : supprimer le compte SferaLuna ne l'arrête pas.
+  // On le lui dit avant, pour qu'elle ne continue pas à payer sans le savoir.
+  const { data: subscriptionData } = useQuery({
+    queryKey: ['subscription', 'status'],
+    queryFn: fetchSubscriptionStatus,
+  });
+  const hasAppleSubscription =
+    subscriptionData?.subscription.isPremium === true && subscriptionData.subscription.source === 'apple';
+
   const handleRequestAccountDeletion = () => {
     // Étape 1 : avertissement clair
+    if (hasAppleSubscription) {
+      Alert.alert(
+        '⚠️ Supprimer mon compte',
+        'Cette action est définitive et irréversible : profil, photos, messages et connexions seront supprimés.\n\nAttention : votre abonnement a été pris avec votre compte Apple. Supprimer votre compte SferaLuna ne le résilie pas — il continuera d’être facturé tant que vous ne l’aurez pas arrêté dans vos abonnements App Store.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Gérer mon abonnement', onPress: () => { openAppleSubscriptions(); } },
+          { text: 'Continuer →', style: 'destructive', onPress: handleConfirmDeletion },
+        ]
+      );
+      return;
+    }
     Alert.alert(
       '⚠️ Supprimer mon compte',
-      'Cette action est définitive et irréversible.\n\nToutes vos données seront supprimées : profil, photos, messages, matches, abonnement.\n\nContinuer ?',
+      'Cette action est définitive et irréversible.\n\nToutes vos données seront supprimées : profil, photos, messages, connexions, abonnement.\n\nContinuer ?',
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -441,7 +464,9 @@ export default function AccountSecurityScreen() {
                     {deleteBusy ? 'Suppression en cours...' : 'Supprimer mon compte'}
                   </Text>
                   <Text style={styles.itemDescription}>
-                    Supprime définitivement votre compte, vos photos, vos messages et annule votre abonnement. Action irréversible.
+                    {hasAppleSubscription
+                      ? 'Supprime définitivement votre compte, vos photos et vos messages. Votre abonnement App Store, lui, doit être résilié depuis votre compte Apple. Action irréversible.'
+                      : 'Supprime définitivement votre compte, vos photos, vos messages et annule votre abonnement. Action irréversible.'}
                   </Text>
                 </View>
               </View>

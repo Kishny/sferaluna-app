@@ -1,48 +1,61 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as WebBrowser from 'expo-web-browser';
 import { LinearGradient } from '../../components/LinearGradient';
 import { OrbitGlow } from '../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
-import {
-  Crown, Check, X,
-} from 'phosphor-react-native';
+import { Check, X } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { GradientButton } from '../../components/GradientButton';
 import { GlassCard } from '../../components/GlassCard';
 import { Colors, Spacing, Radius } from '../../lib/theme';
-import { createCheckoutSession } from '../../lib/api';
-import { ApiError, API_BASE_URL } from '../../lib/http';
+import { fetchSubscriptionStatus, type CheckoutPlan } from '../../lib/api';
+import { API_BASE_URL } from '../../lib/http';
+import {
+  IAP_PLATFORM, IapError, fetchStorePlans, purchasePlan, restorePlan, openAppleSubscriptions,
+} from '../../lib/iap';
 import { NP } from '../../components/NP';
 import { hapticLight, hapticMedium, hapticSuccess, hapticError, hapticWarning } from '../../lib/haptics';
 
 /**
- * Le backend redirige toujours vers les pages web (success_url → /mon-compte,
- * cancel_url → /paiement — voir create-checkout-session/route.ts, codé en dur
- * sur l'URL de l'app web). On ouvre donc Stripe Checkout dans une session
- * d'authentification in-app : dès que la redirection finale revient sur le
- * domaine de l'app, la session se ferme et on peut rafraîchir le statut réel
- * (isPremium est calculé serveur, jamais piloté depuis le client).
+ * Écran des formules.
+ *
+ * - iPhone : l'abonnement s'achète avec le compte Apple (achat intégré). Les
+ *   prix viennent de l'App Store, le serveur vérifie la preuve d'achat et
+ *   active la formule (voir lib/iap.ts).
+ * - Android : pas d'achat dans l'app pour l'instant ; l'écran montre seulement
+ *   la formule en cours.
+ * - Membre déjà abonnée (dans l'app ou sur le site) : sa formule est affichée,
+ *   sans bouton d'achat, pour ne jamais la faire payer deux fois.
+ *
+ * `isPremium` est toujours calculé par le serveur, jamais piloté d'ici.
  */
-const APP_ORIGIN = API_BASE_URL.replace(/\/$/, '');
+const SITE = API_BASE_URL.replace(/\/$/, '');
+
+function formatDate(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
 
 /**
  * Plans SferaLuna — valeurs et contenus strictement alignés sur
  * src/app/paiement/page.tsx et src/models/User.ts du backend.
  * Le plan `free` n'est pas proposé ici : cet écran sert à passer
  * d'un compte gratuit vers un abonnement payant.
+ * Les prix ne sont pas écrits ici : sur iPhone, c'est Apple qui les fournit
+ * (lib/iap.ts), pour qu'ils soient toujours ceux réellement facturés.
  */
-type LunaPlan = 'essential-monthly' | 'premium-monthly' | 'elite-monthly';
+type LunaPlan = CheckoutPlan;
 
 interface PlanConfig {
   id: LunaPlan;
   name: string;
-  price: string;
-  per: string;
   badge?: string;
   highlighted?: boolean;
   description: string;
@@ -53,8 +66,6 @@ const plans: PlanConfig[] = [
   {
     id: 'essential-monthly',
     name: 'Essentiel',
-    price: '9,99 €',
-    per: '/ mois',
     description: 'Pour découvrir SferaLuna en douceur.',
     features: [
       'Profil visible',
@@ -67,8 +78,6 @@ const plans: PlanConfig[] = [
   {
     id: 'premium-monthly',
     name: 'Premium',
-    price: '19,99 €',
-    per: '/ mois',
     badge: 'Le plus populaire',
     highlighted: true,
     description: 'Pour profiter pleinement de SferaLuna.',
@@ -84,8 +93,6 @@ const plans: PlanConfig[] = [
   {
     id: 'elite-monthly',
     name: 'Elite',
-    price: '34,99 €',
-    per: '/ mois',
     badge: 'VIP',
     description: "L'expérience la plus complète de SferaLuna.",
     features: [
@@ -102,73 +109,122 @@ const plans: PlanConfig[] = [
 export default function PremiumScreen() {
   // Premium est l'offre mise en avant par défaut, comme sur le web.
   const [selected, setSelected] = useState<LunaPlan>('premium-monthly');
-  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
-  const [waiver, setWaiver] = useState(false);
   const queryClient = useQueryClient();
 
-  const selectedPlan = plans.find((p) => p.id === selected) ?? plans[1];
+  const statusQuery = useQuery({ queryKey: ['subscription', 'status'], queryFn: fetchSubscriptionStatus });
+  const subscription = statusQuery.data?.subscription;
+  const isSubscribed = subscription?.isPremium === true;
+  const canBuy = IAP_PLATFORM && !!subscription && !isSubscribed;
 
-  /**
-   * Lance Stripe Checkout via le backend existant.
-   * POST /api/stripe/create-checkout-session { plan } → { success, url }
-   * isPremium est calculé automatiquement côté serveur après webhook —
-   * jamais piloté depuis le client.
-   */
-  const handleSubscribe = async () => {
-    if (loading) return;
-    if (!waiver) {
-      hapticWarning();
-      setError('Cochez la case ci-dessous pour continuer vers le paiement.');
+  // Les prix Apple ne sont demandés que si l'achat est réellement proposé.
+  const storeQuery = useQuery({
+    queryKey: ['iap', 'plans'],
+    queryFn: fetchStorePlans,
+    enabled: canBuy,
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
+  });
+  const prices = new Map((storeQuery.data ?? []).map((item) => [item.plan, item.displayPrice]));
+  const offered = plans.filter((plan) => prices.has(plan.id));
+  const selectedPlan = offered.find((plan) => plan.id === selected) ?? offered[0];
+
+  const refreshAccount = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['subscription', 'status'] }),
+      queryClient.invalidateQueries({ queryKey: ['profile', 'me'] }),
+      queryClient.invalidateQueries({ queryKey: ['session'] }),
+    ]);
+  };
+
+  // Rattrapage silencieux : un achat payé mais pas encore activé (coupure
+  // réseau juste après le paiement) est validé à l'ouverture de l'écran, sans
+  // rien demander. Une seule tentative, et jamais de message en cas d'échec.
+  const recovered = useRef(false);
+  useEffect(() => {
+    if (!canBuy || recovered.current) return;
+    recovered.current = true;
+    restorePlan(false)
+      .then((result) => { if (result?.isPremium) return refreshAccount(); })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canBuy]);
+
+  const fail = (e: unknown) => {
+    if (e instanceof IapError) {
+      if (e.kind === 'cancelled') return;
+      if (e.kind === 'pending') { hapticWarning(); setInfo(e.message); return; }
+      hapticError();
+      setError(e.message);
       return;
     }
+    hapticError();
+    setError('Une erreur est survenue. Réessayez dans un instant.');
+  };
+
+  const handleSubscribe = async () => {
+    if (busy || !selectedPlan) return;
     hapticMedium();
-    setLoading(true);
+    setBusy('buy');
     setError('');
     setInfo('');
     try {
-      const data = await createCheckoutSession(selected, waiver);
-
-      if (!data?.url) {
-        hapticError();
-        setError('Impossible de démarrer le paiement. Réessayez dans un instant.');
-        return;
-      }
-
-      // Stripe Checkout est une page web sécurisée hébergée par Stripe : on
-      // l'ouvre dans une session d'authentification in-app et on attend la
-      // redirection finale vers le domaine de l'app (success ou annulation).
-      const result = await WebBrowser.openAuthSessionAsync(data.url, APP_ORIGIN);
-
-      if (result.type === 'success' && result.url) {
-        const returned = new URL(result.url);
-        const status = returned.searchParams.get('payment');
-        if (status === 'success') {
-          // isPremium est recalculé côté serveur après le webhook Stripe ;
-          // on rafraîchit simplement les données affichées dans l'app.
-          await queryClient.invalidateQueries();
-          hapticSuccess();
-          setInfo('Paiement confirmé ! Votre abonnement est en cours d\'activation — cela peut prendre quelques instants.');
-        } else if (status === 'cancelled') {
-          hapticWarning();
-          setInfo('Paiement annulé. Vous pouvez réessayer quand vous le souhaitez.');
-        } else {
-          await queryClient.invalidateQueries();
-        }
-      }
-      // type 'cancel' / 'dismiss' : l'utilisatrice a fermé la fenêtre — rien à faire.
-    } catch (e) {
-      hapticError();
-      if (e instanceof ApiError) {
-        setError(e.message ?? 'Impossible de démarrer le paiement. Réessayez dans un instant.');
+      const result = await purchasePlan(selectedPlan.id);
+      await refreshAccount();
+      if (result.isPremium) {
+        hapticSuccess();
+        setInfo(`Bienvenue dans la formule ${selectedPlan.name} ! Votre abonnement est actif.`);
       } else {
-        setError('Connexion impossible. Vérifiez votre réseau et réessayez.');
+        hapticWarning();
+        setInfo('Achat reçu. Votre formule sera activée dans quelques instants.');
       }
+    } catch (e) {
+      fail(e);
     } finally {
-      setLoading(false);
+      setBusy(null);
     }
   };
+
+  const handleRestore = async () => {
+    if (busy) return;
+    hapticLight();
+    setBusy('restore');
+    setError('');
+    setInfo('');
+    try {
+      const result = await restorePlan(true);
+      await refreshAccount();
+      if (result?.isPremium) {
+        hapticSuccess();
+        setInfo('Votre abonnement a été restauré.');
+      } else {
+        hapticWarning();
+        setInfo('Aucun abonnement actif n’a été trouvé sur ce compte Apple.');
+      }
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleManage = async () => {
+    hapticLight();
+    setError('');
+    const opened = await openAppleSubscriptions();
+    if (!opened) {
+      setError('Ouvrez l’app Réglages de votre iPhone, touchez votre nom, puis « Abonnements ».');
+    }
+  };
+
+  const openPage = (path: string) => {
+    hapticLight();
+    WebBrowser.openBrowserAsync(`${SITE}${path}`).catch(() => {});
+  };
+
+  const renewal = formatDate(subscription?.premiumExpiresAt);
 
   return (
     <LinearGradient
@@ -182,7 +238,12 @@ export default function PremiumScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Close */}
           <View style={styles.closeRow}>
-            <TouchableOpacity onPress={() => { hapticLight(); router.back(); }} style={styles.closeBtn}>
+            <TouchableOpacity
+              onPress={() => { hapticLight(); router.back(); }}
+              style={styles.closeBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Fermer"
+            >
               <NP><X size={20} color={Colors.textSecondary} />
             </NP></TouchableOpacity>
           </View>
@@ -193,101 +254,198 @@ export default function PremiumScreen() {
               <Text style={styles.crownEmoji}>👑</Text>
               <View style={styles.crownGlow} />
             </View>
-            <Text style={styles.heroTitle}>SferaLuna Premium</Text>
-            <Text style={styles.heroSub}>
-              Profitez de toute la communauté,{'\n'}sans limites.
-            </Text>
-          </View>
-
-          {/* Plans */}
-          <View style={styles.plans}>
-            <Text style={styles.plansTitle}>Choisissez votre formule</Text>
-            {plans.map((plan) => {
-              const isActive = selected === plan.id;
-              return (
-                <TouchableOpacity
-                  key={plan.id}
-                  onPress={() => { hapticLight(); setSelected(plan.id); }}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.planCard, isActive && styles.planCardActive]}>
-                    {plan.badge && (
-                      <View style={styles.popularBadge}>
-                        <Text style={styles.popularText}>{plan.badge}</Text>
-                      </View>
-                    )}
-                    <View style={styles.planHeaderRow}>
-                      <View style={styles.planLeft}>
-                        <View style={[styles.radio, isActive && styles.radioActive]}>
-                          {isActive && <View style={styles.radioInner} />}
-                        </View>
-                        <View>
-                          <Text style={styles.planLabel}>{plan.name}</Text>
-                          <Text style={styles.planDescription}>{plan.description}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.planRight}>
-                        <Text style={styles.planPrice}>{plan.price}</Text>
-                        <Text style={styles.planPer}>{plan.per}</Text>
-                      </View>
-                    </View>
-                    {isActive && (
-                      <View style={styles.planFeatures}>
-                        {plan.features.map((feature) => (
-                          <View key={feature} style={styles.featureItem}>
-                            <NP><Check size={16} color={Colors.success} weight="bold" />
-                            </NP><Text style={styles.featureLabel}>{feature}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Erreur */}
-          {!!error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
-
-          {/* Info (retour de paiement) */}
-          {!!info && (
-            <View style={styles.infoBox}>
-              <Text style={styles.infoText}>{info}</Text>
-            </View>
-          )}
-
-          {/* CTA */}
-          <View style={styles.cta}>
-            <TouchableOpacity
-              style={styles.waiverRow}
-              activeOpacity={0.8}
-              onPress={() => { hapticLight(); setWaiver((v) => !v); setError(''); }}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: waiver }}
-            >
-              <View style={[styles.waiverBox, waiver && styles.waiverBoxOn]}>
-                {waiver && <Check size={14} color="#fff" weight="bold" />}
-              </View>
-              <Text style={styles.waiverText}>
-                Je demande l’accès immédiat à mon abonnement et je reconnais renoncer à mon droit de
-                rétractation de 14 jours.
+            <Text style={styles.heroTitle}>{isSubscribed ? 'Mon abonnement' : 'Les formules SferaLuna'}</Text>
+            {!isSubscribed && (
+              <Text style={styles.heroSub}>
+                Profitez de toute la communauté,{'\n'}sans limites.
               </Text>
-            </TouchableOpacity>
-            <GradientButton
-              label={`Passer à ${selectedPlan.name}`}
-              onPress={handleSubscribe}
-              loading={loading}
-            />
-            <Text style={styles.ctaNote}>
-              Paiement sécurisé via Stripe. Résiliable à tout moment depuis{' '}
-              « Mon compte ».
-            </Text>
+            )}
           </View>
+
+          {/* Chargement de l'état d'abonnement */}
+          {statusQuery.isPending && (
+            <View style={styles.loadingBox}>
+              <ActivityIndicator color={Colors.accentPink} />
+            </View>
+          )}
+
+          {statusQuery.isError && (
+            <GlassCard style={styles.notice}>
+              <Text style={styles.noticeTitle}>Connexion impossible</Text>
+              <Text style={styles.noticeText}>
+                Nous n’avons pas pu charger votre abonnement. Vérifiez votre réseau et réessayez.
+              </Text>
+              <GradientButton label="Réessayer" variant="outline" onPress={() => statusQuery.refetch()} style={{ marginTop: 14 }} />
+            </GlassCard>
+          )}
+
+          {/* Déjà abonnée : la formule en cours, jamais de second achat */}
+          {subscription && isSubscribed && (
+            <>
+              <GlassCard style={styles.current}>
+                <Text style={styles.currentKicker}>Votre formule</Text>
+                <Text style={styles.currentPlan}>{subscription.planLabel}</Text>
+                {!!renewal && (
+                  <Text style={styles.currentMeta}>
+                    {subscription.cancelAtPeriodEnd
+                      ? `Renouvellement désactivé — accès jusqu’au ${renewal}.`
+                      : `Prochain renouvellement le ${renewal}.`}
+                  </Text>
+                )}
+                <Text style={styles.currentMeta}>
+                  {subscription.source === 'apple'
+                    ? 'Abonnement pris avec votre compte Apple. Vous pouvez changer de formule ou le résilier depuis vos abonnements App Store.'
+                    : 'Abonnement pris sur sferaluna.com. Il se gère depuis votre compte sur le site.'}
+                </Text>
+              </GlassCard>
+
+              {!!error && (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              )}
+              {!!info && (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoText}>{info}</Text>
+                </View>
+              )}
+
+              {subscription.source === 'apple' && (
+                <View style={styles.cta}>
+                  <GradientButton label="Gérer mon abonnement" onPress={handleManage} />
+                </View>
+              )}
+            </>
+          )}
+
+          {/* Pas abonnée, hors iPhone : aucun achat dans l'app */}
+          {subscription && !isSubscribed && !IAP_PLATFORM && (
+            <GlassCard style={styles.notice}>
+              <Text style={styles.noticeTitle}>Formule Gratuite</Text>
+              <Text style={styles.noticeText}>
+                Les abonnements ne sont pas encore proposés dans cette version de l’application.
+              </Text>
+            </GlassCard>
+          )}
+
+          {/* Pas abonnée, iPhone : achat intégré */}
+          {canBuy && (
+            <>
+              {storeQuery.isPending && (
+                <View style={styles.loadingBox}>
+                  <ActivityIndicator color={Colors.accentPink} />
+                </View>
+              )}
+
+              {!storeQuery.isPending && offered.length === 0 && (
+                <GlassCard style={styles.notice}>
+                  <Text style={styles.noticeTitle}>Formules indisponibles</Text>
+                  <Text style={styles.noticeText}>
+                    L’App Store ne répond pas pour le moment. Réessayez dans un instant.
+                  </Text>
+                  <GradientButton label="Réessayer" variant="outline" onPress={() => storeQuery.refetch()} style={{ marginTop: 14 }} />
+                </GlassCard>
+              )}
+
+              {offered.length > 0 && selectedPlan && (
+                <>
+                  <View style={styles.plans}>
+                    <Text style={styles.plansTitle}>Choisissez votre formule</Text>
+                    {offered.map((plan) => {
+                      const isActive = selectedPlan.id === plan.id;
+                      return (
+                        <TouchableOpacity
+                          key={plan.id}
+                          onPress={() => { hapticLight(); setSelected(plan.id); setError(''); }}
+                          activeOpacity={0.8}
+                          accessibilityRole="radio"
+                          accessibilityState={{ selected: isActive }}
+                          accessibilityLabel={`${plan.name}, ${prices.get(plan.id)} par mois`}
+                        >
+                          <View style={[styles.planCard, isActive && styles.planCardActive]}>
+                            {plan.badge && (
+                              <View style={styles.popularBadge}>
+                                <Text style={styles.popularText}>{plan.badge}</Text>
+                              </View>
+                            )}
+                            <View style={styles.planHeaderRow}>
+                              <View style={styles.planLeft}>
+                                <View style={[styles.radio, isActive && styles.radioActive]}>
+                                  {isActive && <View style={styles.radioInner} />}
+                                </View>
+                                <View>
+                                  <Text style={styles.planLabel}>{plan.name}</Text>
+                                  <Text style={styles.planDescription}>{plan.description}</Text>
+                                </View>
+                              </View>
+                              <View style={styles.planRight}>
+                                <Text style={styles.planPrice}>{prices.get(plan.id)}</Text>
+                                <Text style={styles.planPer}>/ mois</Text>
+                              </View>
+                            </View>
+                            {isActive && (
+                              <View style={styles.planFeatures}>
+                                {plan.features.map((feature) => (
+                                  <View key={feature} style={styles.featureItem}>
+                                    <NP><Check size={16} color={Colors.success} weight="bold" />
+                                    </NP><Text style={styles.featureLabel}>{feature}</Text>
+                                  </View>
+                                ))}
+                              </View>
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {!!error && (
+                    <View style={styles.errorBox}>
+                      <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                  )}
+                  {!!info && (
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoText}>{info}</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.cta}>
+                    <GradientButton
+                      label={`S’abonner — ${prices.get(selectedPlan.id)} / mois`}
+                      onPress={handleSubscribe}
+                      loading={busy === 'buy'}
+                      disabled={busy !== null}
+                    />
+                    <Text style={styles.ctaNote}>
+                      Abonnement mensuel {selectedPlan.name} à {prices.get(selectedPlan.id)} par mois, renouvelé
+                      automatiquement. Le paiement est débité sur votre compte Apple à la confirmation de
+                      l’achat. L’abonnement se renouvelle chaque mois sauf résiliation au moins 24 heures
+                      avant la fin de la période en cours, depuis les réglages de votre compte App Store.
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleRestore}
+                      disabled={busy !== null}
+                      style={styles.restore}
+                      accessibilityRole="button"
+                    >
+                      {busy === 'restore'
+                        ? <ActivityIndicator color={Colors.accentPink} size="small" />
+                        : <Text style={styles.restoreText}>Restaurer mes achats</Text>}
+                    </TouchableOpacity>
+                    <View style={styles.legalLinks}>
+                      <TouchableOpacity onPress={() => openPage('/conditions')} accessibilityRole="link">
+                        <Text style={styles.link}>Conditions d’utilisation</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => openPage('/confidentialite')} accessibilityRole="link">
+                        <Text style={styles.link}>Politique de confidentialité</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </>
+              )}
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -295,14 +453,6 @@ export default function PremiumScreen() {
 }
 
 const styles = StyleSheet.create({
-  waiverRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: Spacing.base, minHeight: 44 },
-  waiverBox: {
-    width: 24, height: 24, borderRadius: 7, marginTop: 1,
-    borderWidth: 1.5, borderColor: Colors.glassBorder, backgroundColor: Colors.glassBg,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  waiverBoxOn: { backgroundColor: Colors.accentPink, borderColor: Colors.accentPink },
-  waiverText: { flex: 1, fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
   bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   closeRow: {
@@ -426,4 +576,16 @@ const styles = StyleSheet.create({
   planPer: { fontSize: 12, color: Colors.textMuted },
   cta: { paddingHorizontal: Spacing.xl, paddingBottom: 40, gap: 16 },
   ctaNote: { fontSize: 12, color: Colors.textMuted, textAlign: 'center', lineHeight: 18 },
+  legalLinks: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 18 },
+  link: { fontSize: 13, color: Colors.textSecondary, textDecorationLine: 'underline', paddingVertical: 8 },
+  restore: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 16, minHeight: 44, justifyContent: 'center' },
+  restoreText: { fontSize: 14, fontWeight: '600', color: Colors.accentPink },
+  loadingBox: { paddingVertical: 48, alignItems: 'center' },
+  notice: { marginHorizontal: Spacing.xl, marginBottom: Spacing.lg, padding: 18 },
+  noticeTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginBottom: 6 },
+  noticeText: { fontSize: 14, color: Colors.textSecondary, lineHeight: 21 },
+  current: { marginHorizontal: Spacing.xl, marginBottom: Spacing.lg, padding: 20, gap: 4 },
+  currentKicker: { fontSize: 12, fontWeight: '600', color: Colors.textMuted, letterSpacing: 0.8, textTransform: 'uppercase' },
+  currentPlan: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
+  currentMeta: { fontSize: 14, color: Colors.textSecondary, lineHeight: 21, marginTop: 2 },
 });

@@ -96,7 +96,7 @@ export default function SettingsScreen() {
   // Revérifie systématiquement auprès de MongoDB via l'API à chaque fois que
   // cet onglet redevient actif (les écrans d'onglets restent montés en arrière-
   // plan dans Expo Router, donc sans focus-refetch les données peuvent rester
-  // figées sur un état antérieur, ex. avant l'activation d'un abonnement Stripe).
+  // figées sur un état antérieur, ex. avant l'activation d'un abonnement).
   useFocusEffect(
     useCallback(() => {
       refetch();
@@ -117,7 +117,7 @@ export default function SettingsScreen() {
   const planLabel = getPlanLabel(plan);
   const expiresAtLabel = formatFrDate(premium?.premiumExpiresAt ?? null);
   const subscriptionDescription = isPremium
-    ? (expiresAtLabel ? `Prochain renouvellement le ${expiresAtLabel}` : 'Abonnement actif')
+    ? (expiresAtLabel ? `Échéance le ${expiresAtLabel}` : 'Abonnement actif')
     : 'Débloquez le Mode Fantôme, plus de visibilité et bien plus.';
 
   /**
@@ -258,7 +258,7 @@ export default function SettingsScreen() {
           description: 'Action définitive et irréversible',
           icon: <NP><Trash size={18} color={Colors.error} /></NP>,
           type: 'danger',
-          onPress: () => {},
+          onPress: () => router.push('/(app)/securite'),
         },
       ],
     },
@@ -332,7 +332,7 @@ export default function SettingsScreen() {
                 <View style={styles.planCta}>
                   <Sparkle size={14} color="#fff" weight="fill" />
                   <Text style={styles.planCtaText}>
-                    {isPremium ? 'Gérer mon abonnement' : 'Découvrir Essentiel, Premium ou Elite — dès 9,99 €/mois'}
+                    {isPremium ? 'Voir mon abonnement' : 'Découvrir les formules Essentiel, Premium et Elite'}
                   </Text>
                   <NP><CaretRight size={14} color="rgba(255,255,255,0.7)" />
                 </NP></View>

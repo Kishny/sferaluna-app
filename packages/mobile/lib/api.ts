@@ -226,44 +226,55 @@ export function updateVisibility(visibilite: ProfileVisibility) {
 }
 
 // ─────────────────────────────────────────────
-// Abonnement & paiement (Stripe — réutilisé tel quel)
+// Abonnement & paiement
 // `isPremium` est calculé serveur, jamais piloté côté client.
+// Dans l'app, l'achat passe par l'App Store (voir lib/iap.ts) ; le paiement
+// par carte n'existe que sur le site.
 // ─────────────────────────────────────────────
 
 export type CheckoutPlan = 'essential-monthly' | 'premium-monthly' | 'elite-monthly';
 
-/** POST /api/stripe/create-checkout-session { plan } → { url } : ouvrir l'URL dans une WebView/navigateur. */
-/**
- * `withdrawalWaiver` : le serveur refuse le paiement tant que la membre n'a pas
- * expressément demandé l'accès immédiat et renoncé à son droit de rétractation
- * (même case à cocher que sur la page de paiement du site).
- */
-export function createCheckoutSession(plan: CheckoutPlan, withdrawalWaiver: boolean) {
-  return http.post<{ success: true; url: string }>('/api/stripe/create-checkout-session', { plan, withdrawalWaiver });
+/** D'où vient l'abonnement en cours : l'App Store, le site (Stripe), ou aucun. */
+export type SubscriptionSource = 'apple' | 'stripe' | null;
+
+export interface SubscriptionSnapshot {
+  plan: UserPlan;
+  planLabel: string;
+  isPremium: boolean;
+  subscriptionStatus: SubscriptionStatus;
+  premiumExpiresAt: string | null;
+  source: SubscriptionSource;
+  /** `true` : l'abonnement s'arrête à l'échéance (renouvellement désactivé). */
+  cancelAtPeriodEnd: boolean;
 }
 
+/** GET /api/subscription/status → { success, subscription } */
 export function fetchSubscriptionStatus() {
-  return http.get<{
-    success: true;
-    plan: UserPlan;
-    isPremium: boolean;
-    subscriptionStatus: SubscriptionStatus;
-    label: string;
-    features: Record<string, unknown>;
-    limits: Record<string, unknown>;
-  }>('/api/subscription/status');
+  return http.get<{ success: true; subscription: SubscriptionSnapshot }>('/api/subscription/status');
 }
 
-export function cancelSubscription() {
-  return http.post<{ success: true }>('/api/stripe/cancel');
+/**
+ * POST /api/apple/account-token → identifiant d'achat du compte connecté, à
+ * joindre à l'achat pour qu'Apple le renvoie dans chaque transaction.
+ */
+export function fetchAppleAccountToken() {
+  return http.post<{ success: true; appAccountToken: string }>('/api/apple/account-token');
 }
 
-export function pauseSubscription() {
-  return http.post<{ success: true }>('/api/stripe/pause');
+export interface ApplePurchaseResult {
+  success: true;
+  /** `false` : preuve valide mais sans effet (ex. un abonnement pris sur le site est déjà actif). */
+  applied: boolean;
+  plan: UserPlan;
+  isPremium: boolean;
+  subscriptionStatus: SubscriptionStatus;
+  premiumExpiresAt: string | null;
+  subscriptionSource: 'apple' | null;
 }
 
-export function reactivateSubscription() {
-  return http.post<{ success: true }>('/api/stripe/reactivate');
+/** POST /api/apple/verify-purchase { signedTransaction } : le serveur vérifie la preuve Apple et active la formule. */
+export function verifyApplePurchase(signedTransaction: string) {
+  return http.post<ApplePurchaseResult>('/api/apple/verify-purchase', { signedTransaction });
 }
 
 // ─────────────────────────────────────────────

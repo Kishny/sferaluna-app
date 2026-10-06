@@ -82,6 +82,7 @@
         }
       ],
       "expo-apple-authentication",
+      "expo-iap",
       [
         "expo-notifications",
         {

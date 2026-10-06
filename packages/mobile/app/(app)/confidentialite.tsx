@@ -47,7 +47,7 @@ const sections: PolicySection[] = [
   {
     title: '3. Avec qui nous les partageons',
     paragraphs: [
-      'Certaines données sont transmises à des prestataires de confiance, strictement nécessaires au fonctionnement de SferaLuna : Stripe (paiements et abonnements, vérification d’identité via Stripe Identity), Cloudinary (hébergement de vos photos de profil), Pusher (messagerie et notifications en temps réel) et Resend (emails transactionnels : confirmation, réinitialisation de mot de passe…).',
+      'Certaines données sont transmises à des prestataires de confiance, strictement nécessaires au fonctionnement de SferaLuna : Apple (paiement des abonnements pris dans l’application iPhone), Stripe (paiement des abonnements pris sur le site, vérification d’identité via Stripe Identity), Cloudinary (hébergement de vos photos de profil), Pusher (messagerie et notifications en temps réel) et Resend (emails transactionnels : confirmation, réinitialisation de mot de passe…).',
       'Ces prestataires n’accèdent qu’aux données strictement nécessaires à leur mission et sont contractuellement engagés à en assurer la confidentialité.',
     ],
   },

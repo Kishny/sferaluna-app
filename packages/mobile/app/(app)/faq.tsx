@@ -63,19 +63,19 @@ const FAQ: FaqSection[] = [
     items: [
       {
         q: "Quelles sont les offres disponibles ?",
-        a: "SferaLuna propose 3 plans payants : Essentiel (9,99€/mois), Premium (19,99€/mois) et Elite (34,99€/mois), en plus du plan Gratuit. Chaque offre débloque des fonctionnalités supplémentaires.",
+        a: "SferaLuna propose 3 formules payantes — Essentiel, Premium et Elite — en plus de la formule Gratuite. Chaque formule débloque des fonctionnalités supplémentaires. Les tarifs sont affichés sur l'écran des formules (Réglages, carte en haut de page).",
       },
       {
         q: "Comment résilier mon abonnement ?",
-        a: "Depuis Réglages → Abonnement → Gérer mon abonnement. La résiliation prend effet à la fin de la période en cours — vous continuez à profiter de votre accès jusqu'à cette date.",
+        a: "Si vous vous êtes abonnée dans l'application iPhone : Réglages de l'iPhone → votre nom → Abonnements → SferaLuna (ou, dans l'app, Réglages → carte d'abonnement → Gérer mon abonnement). Si vous vous êtes abonnée sur le site : depuis votre compte sur le site. Dans les deux cas, la résiliation prend effet à la fin de la période en cours — vous gardez votre accès jusqu'à cette date.",
       },
       {
         q: "Mon paiement est-il sécurisé ?",
-        a: "Oui. Les paiements sont gérés par Stripe, l'un des processeurs de paiement les plus sécurisés au monde. SferaLuna ne stocke jamais vos données bancaires.",
+        a: "Oui. Dans l'application iPhone, le paiement passe par votre compte Apple. Sur le site, il est géré par Stripe. SferaLuna ne voit ni ne stocke jamais vos données bancaires.",
       },
       {
-        q: "Puis-je mettre mon abonnement en pause ?",
-        a: "Oui, depuis la page Abonnement. Votre accès Premium est suspendu pendant la pause et reprend automatiquement à la réactivation.",
+        q: "Que se passe-t-il si je change d'appareil ?",
+        a: "Votre abonnement est rattaché à votre compte SferaLuna : connectez-vous et il est là. Si un abonnement pris sur iPhone n'apparaît pas, ouvrez l'écran des formules et touchez « Restaurer mes achats ».",
       },
     ],
   },
@@ -97,7 +97,7 @@ const FAQ: FaqSection[] = [
       },
       {
         q: "Comment supprimer mon compte ?",
-        a: "Depuis Réglages → Compte → Supprimer mon compte. La suppression est définitive et entraîne la perte de toutes vos connexions et de vos messages.",
+        a: "Depuis Réglages → Sécurité du compte → Supprimer mon compte. La suppression est définitive et entraîne la perte de toutes vos connexions et de vos messages. Un abonnement pris sur iPhone doit être résilié séparément, depuis vos abonnements App Store.",
       },
     ],
   },
