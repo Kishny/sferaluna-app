@@ -187,6 +187,28 @@ export function fetchMyProfile() {
   }>('/api/users/profile');
 }
 
+/**
+ * Création du profil à la première connexion (mêmes champs que l'inscription
+ * du site). Le serveur marque alors le profil comme complété : la membre
+ * devient visible dans l'annuaire.
+ */
+export function completeProfile(payload: {
+  pseudonyme: string;
+  age: number;
+  intentions: string[];
+  orientation?: string;
+  departement: string;
+  localisation: string;
+  rayon: string;
+  interets: string[];
+  question: string;
+  reponse: string;
+  visibilite: ProfileVisibility;
+  consentement: true;
+}) {
+  return http.post<{ success: true }>('/api/users/update-profile', payload);
+}
+
 export function updateMyProfile(payload: Record<string, unknown>) {
   return http.put<{ success: true; user: Record<string, unknown> }>('/api/users/profile', payload);
 }

@@ -95,6 +95,7 @@ export const demoMyProfile = {
     image: W(68),
     photos: [W(65), W(90), W(12)],
     identityVerified: true,
+    hasCompletedProfile: true,
     visibilite: 'invisible' as const, // Mode Fantôme actif (plan premium)
     createdAt: day(120),
   },

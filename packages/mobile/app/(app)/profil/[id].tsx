@@ -17,7 +17,7 @@ import {
 } from 'phosphor-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, Radius } from '../../../lib/theme';
-import { intentionLabels } from '../../../lib/intentions';
+import { intentionLabels, interestLabels } from '../../../lib/intentions';
 import { fetchPublicProfile, likeProfile, fetchMatches, recordProfileVisit, blockUser } from '../../../lib/api';
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
@@ -136,7 +136,7 @@ export default function PublicProfileScreen() {
   const name = profile.pseudonyme;
   const age = profile.age;
   const city = profile.localisation;
-  const tags = profile.interets ?? [];
+  const tags = interestLabels(profile.interets);
   const intentions = intentionLabels(profile.intentions);
   const bio = profile.bio;
   const orientation = profile.orientation;

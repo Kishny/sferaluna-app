@@ -20,6 +20,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, SealCheck, MapPin, Sparkle, Star } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
+import { interestLabels } from '../../lib/intentions';
 import { fetchCircle, likeProfile, type CircleProfile } from '../../lib/api';
 import { ApiError } from '../../lib/http';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,7 +39,7 @@ function AffinityCard({ profile, index }: { profile: CircleProfile; index: numbe
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['affinites'] }),
   });
 
-  const tags = (profile.interets ?? []).slice(0, 3);
+  const tags = interestLabels(profile.interets).slice(0, 3);
   const accent = ACCENT_BARS[index % ACCENT_BARS.length];
 
   return (

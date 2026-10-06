@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { Colors } from '../../lib/theme';
 import { registerForPushNotifications } from '../../lib/notifications';
 import { VerificationOverlay } from '../../components/VerificationGate';
+import { ProfileSetupOverlay } from '../../components/ProfileSetup';
 
 export default function AppLayout() {
   // Ce layout ne monte QUE dans la zone authentifiée (après login / session
@@ -42,6 +43,9 @@ export default function AppLayout() {
           il couvre l'app tant que identityVerified !== true (voir
           components/VerificationGate.tsx). */}
       <VerificationOverlay />
+      {/* Création du profil à la première connexion, affichée avant la
+          vérification d'identité (voir components/ProfileSetup.tsx). */}
+      <ProfileSetupOverlay />
     </View>
   );
 }

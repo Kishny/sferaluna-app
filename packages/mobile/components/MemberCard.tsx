@@ -5,6 +5,7 @@ import { LinearGradient } from './LinearGradient';
 import { Colors, Radius } from '../lib/theme';
 import type { PublicProfile } from '../lib/api';
 import { NP } from './NP';
+import { interestLabels } from '../lib/intentions';
 
 interface Props {
   profile: PublicProfile;
@@ -23,7 +24,7 @@ interface Props {
  * Aucun geste de glissement : on parcourt la communauté, on lit, on choisit.
  */
 export function MemberCard({ profile, width, invited, pending, onOpen, onInvite }: Props) {
-  const tags = (profile.interets ?? []).slice(0, 2);
+  const tags = interestLabels(profile.interets).slice(0, 2);
 
   return (
     <View style={[styles.card, { width }]}>
