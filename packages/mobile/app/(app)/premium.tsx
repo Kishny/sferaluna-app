@@ -105,6 +105,7 @@ export default function PremiumScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [waiver, setWaiver] = useState(false);
   const queryClient = useQueryClient();
 
   const selectedPlan = plans.find((p) => p.id === selected) ?? plans[1];
@@ -117,12 +118,17 @@ export default function PremiumScreen() {
    */
   const handleSubscribe = async () => {
     if (loading) return;
+    if (!waiver) {
+      hapticWarning();
+      setError('Cochez la case ci-dessous pour continuer vers le paiement.');
+      return;
+    }
     hapticMedium();
     setLoading(true);
     setError('');
     setInfo('');
     try {
-      const data = await createCheckoutSession(selected);
+      const data = await createCheckoutSession(selected, waiver);
 
       if (!data?.url) {
         hapticError();
@@ -257,6 +263,21 @@ export default function PremiumScreen() {
 
           {/* CTA */}
           <View style={styles.cta}>
+            <TouchableOpacity
+              style={styles.waiverRow}
+              activeOpacity={0.8}
+              onPress={() => { hapticLight(); setWaiver((v) => !v); setError(''); }}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: waiver }}
+            >
+              <View style={[styles.waiverBox, waiver && styles.waiverBoxOn]}>
+                {waiver && <Check size={14} color="#fff" weight="bold" />}
+              </View>
+              <Text style={styles.waiverText}>
+                Je demande l’accès immédiat à mon abonnement et je reconnais renoncer à mon droit de
+                rétractation de 14 jours.
+              </Text>
+            </TouchableOpacity>
             <GradientButton
               label={`Passer à ${selectedPlan.name}`}
               onPress={handleSubscribe}
@@ -274,6 +295,14 @@ export default function PremiumScreen() {
 }
 
 const styles = StyleSheet.create({
+  waiverRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: Spacing.base, minHeight: 44 },
+  waiverBox: {
+    width: 24, height: 24, borderRadius: 7, marginTop: 1,
+    borderWidth: 1.5, borderColor: Colors.glassBorder, backgroundColor: Colors.glassBg,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  waiverBoxOn: { backgroundColor: Colors.accentPink, borderColor: Colors.accentPink },
+  waiverText: { flex: 1, fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
   bg: { flex: 1, overflow: 'hidden' },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   closeRow: {

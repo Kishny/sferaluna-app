@@ -211,8 +211,13 @@ export function updateVisibility(visibilite: ProfileVisibility) {
 export type CheckoutPlan = 'essential-monthly' | 'premium-monthly' | 'elite-monthly';
 
 /** POST /api/stripe/create-checkout-session { plan } → { url } : ouvrir l'URL dans une WebView/navigateur. */
-export function createCheckoutSession(plan: CheckoutPlan) {
-  return http.post<{ success: true; url: string }>('/api/stripe/create-checkout-session', { plan });
+/**
+ * `withdrawalWaiver` : le serveur refuse le paiement tant que la membre n'a pas
+ * expressément demandé l'accès immédiat et renoncé à son droit de rétractation
+ * (même case à cocher que sur la page de paiement du site).
+ */
+export function createCheckoutSession(plan: CheckoutPlan, withdrawalWaiver: boolean) {
+  return http.post<{ success: true; url: string }>('/api/stripe/create-checkout-session', { plan, withdrawalWaiver });
 }
 
 export function fetchSubscriptionStatus() {
@@ -482,8 +487,29 @@ export interface ProfileVisitor {
   visitedAt: string;
 }
 
-export function fetchVisitors() {
-  return http.get<{ success: true; visitors: ProfileVisitor[] }>('/api/visitors');
+/** Visite telle que renvoyée par GET /api/visitors. */
+interface ServerVisit {
+  user?: { _id: string; pseudonyme?: string; image?: string; identityVerified?: boolean };
+  lastVisit?: string;
+  // Ancienne forme à plat, encore servie par le mode démo.
+  visitorId?: string;
+  pseudonyme?: string;
+  image?: string;
+  identityVerified?: boolean;
+  visitedAt?: string;
+}
+
+/** Réservé aux formules Premium et Elite côté serveur (403 sinon). */
+export async function fetchVisitors() {
+  const res = await http.get<{ success: true; visitors: ServerVisit[] }>('/api/visitors');
+  const visitors: ProfileVisitor[] = (res.visitors ?? []).map((v) => ({
+    visitorId: v.user?._id ?? v.visitorId ?? '',
+    pseudonyme: v.user?.pseudonyme ?? v.pseudonyme ?? '',
+    image: v.user?.image || v.image || undefined,
+    identityVerified: v.user?.identityVerified ?? v.identityVerified,
+    visitedAt: v.lastVisit ?? v.visitedAt ?? '',
+  })).filter((v) => v.visitorId);
+  return { success: true as const, visitors };
 }
 
 // ─────────────────────────────────────────────
