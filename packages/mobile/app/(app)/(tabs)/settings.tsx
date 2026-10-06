@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { StatusBar } from 'expo-status-bar';
 import {
-  Bell, Lock, Eye, Crown, SignOut, MoonStars, CaretRight, Trash, ShieldCheck, Sparkle, UsersThree,
+  Bell, Lock, Eye, Crown, SignOut, MoonStars, CaretRight, Trash, ShieldCheck, Sparkle, UsersThree, ArrowLeft,
 } from 'phosphor-react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { GlassCard } from '../../../components/GlassCard';
@@ -282,7 +282,14 @@ export default function SettingsScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <MoonStars size={20} color={Colors.accentPink} weight="regular" />
+              <TouchableOpacity
+                style={styles.backBtn}
+                onPress={() => (router.canGoBack() ? router.back() : router.replace('/(app)/(tabs)/profile'))}
+                accessibilityRole="button"
+                accessibilityLabel="Retour au profil"
+              >
+                <NP><ArrowLeft size={20} color={Colors.textPrimary} /></NP>
+              </TouchableOpacity>
               <Text style={styles.title}>Réglages</Text>
             </View>
             {pseudonyme && (
@@ -411,6 +418,16 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.glassBg,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   bg: { flex: 1 },
   safe: { flex: 1, backgroundColor: '#1a0b2e' },
   header: {

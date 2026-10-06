@@ -474,6 +474,47 @@ export const demoEvents: LunaEvent[] = [
 export const demoEventsResponse = { success: true as const, events: demoEvents };
 
 // ─────────────────────────────────────────────────────────────
+//  COMMUNAUTÉ  (GET /api/community) — même forme que le serveur
+// ─────────────────────────────────────────────────────────────
+export const demoCommunityResponse = {
+  success: true as const,
+  posts: [
+    {
+      _id: 'demo-post-1',
+      userId: { _id: IDS.clara, pseudonyme: 'Clara', image: W(44) },
+      title: 'Vos adresses de cafés où travailler à Bordeaux ?',
+      content: "Je cherche des endroits calmes avec du bon café pour mes après-midi de télétravail. Vous avez des coups de cœur ?",
+      category: 'sorties', emoji: '🎉', isPinned: false,
+      likesCount: 12, likedByMe: false, createdAt: hr(3),
+      comments: [
+        { _id: 'demo-c-1', userId: { _id: IDS.jade, pseudonyme: 'Jade' }, content: 'Le Café Lumière, sans hésiter !', createdAt: hr(2) },
+        { _id: 'demo-c-2', userId: { _id: IDS.ines, pseudonyme: 'Inès' }, content: "J'y vais souvent, on peut s'y retrouver.", createdAt: hr(1) },
+      ],
+    },
+    {
+      _id: 'demo-post-2',
+      userId: { _id: IDS.sofia, pseudonyme: 'Sofia', image: W(68) },
+      title: 'Reprendre le sport à plusieurs',
+      content: "Qui serait partante pour une sortie course à pied le dimanche matin ? Niveau débutante, l'idée est surtout de se motiver ensemble.",
+      category: 'bien-etre', emoji: '🌿', isPinned: false,
+      likesCount: 8, likedByMe: true, createdAt: hr(9),
+      comments: [
+        { _id: 'demo-c-3', userId: { _id: IDS.lea, pseudonyme: 'Léa' }, content: 'Moi ! Dimanche prochain ?', createdAt: hr(6) },
+      ],
+    },
+    {
+      _id: 'demo-post-3',
+      userId: { _id: IDS.manon, pseudonyme: 'Manon', image: W(32) },
+      title: 'Un livre qui vous a marquée cette année',
+      content: 'Je termine tout juste un roman que je n’ai pas pu lâcher. Et vous, quelle lecture conseilleriez-vous ?',
+      category: 'general', emoji: '💬', isPinned: false,
+      likesCount: 15, likedByMe: false, createdAt: day(1),
+      comments: [],
+    },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────
 //  CIRCLE OF SIX  (GET /api/circle)
 // ─────────────────────────────────────────────────────────────
 export const demoCircle: CircleProfile[] = [

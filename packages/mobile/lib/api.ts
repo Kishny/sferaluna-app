@@ -503,36 +503,56 @@ export interface LunaEvent {
   createdAt: string;
 }
 
-export function fetchEvents() {
-  return http.get<{ success: true; events: LunaEvent[] }>('/api/events');
+/** Événement tel que renvoyé par GET /api/events (noms de champs du serveur). */
+type ServerEvent = Omit<LunaEvent, 'registeredCount' | 'capacity'> & {
+  attendeeCount?: number;
+  maxAttendees?: number;
+  registeredCount?: number;
+  capacity?: number;
+};
+
+export async function fetchEvents() {
+  const res = await http.get<{ success: true; events: ServerEvent[] }>('/api/events');
+  const events: LunaEvent[] = (res.events ?? []).map((e) => ({
+    ...e,
+    registeredCount: e.attendeeCount ?? e.registeredCount ?? 0,
+    capacity: e.maxAttendees ?? e.capacity,
+  }));
+  return { success: true as const, events };
 }
 
-export function toggleEventRegistration(eventId: string) {
-  return http.post<{ success: true; isRegistered: boolean; registeredCount: number }>(
-    `/api/events/${eventId}`
-  );
+export async function toggleEventRegistration(eventId: string) {
+  const res = await http.post<{
+    success: true; registered?: boolean; attendeeCount?: number; isRegistered?: boolean; registeredCount?: number;
+  }>(`/api/events/${eventId}`);
+  return {
+    success: true as const,
+    isRegistered: res.registered ?? res.isRegistered ?? false,
+    registeredCount: res.attendeeCount ?? res.registeredCount ?? 0,
+  };
 }
 
 // ─────────────────────────────────────────────
 // Communauté Luna
 // ─────────────────────────────────────────────
 
+// Catégories : mêmes valeurs que le serveur (models/CommunityPost) et le site.
 export type CommunityCategory =
   | 'general'
-  | 'rencontres'
   | 'conseils'
-  | 'evenements'
-  | 'humor'
-  | 'autre';
+  | 'sorties'
+  | 'bien-etre'
+  | 'humour'
+  | 'rencontres';
 
 export const COMMUNITY_CATEGORIES: { value: CommunityCategory | 'all'; label: string; emoji: string }[] = [
-  { value: 'all',        label: 'Tout',        emoji: '🌙' },
-  { value: 'general',    label: 'Général',     emoji: '💬' },
-  { value: 'rencontres', label: 'Rencontres',  emoji: '💕' },
-  { value: 'conseils',   label: 'Conseils',    emoji: '✨' },
-  { value: 'evenements', label: 'Événements',  emoji: '🗓️' },
-  { value: 'humor',      label: 'Humour',      emoji: '😄' },
-  { value: 'autre',      label: 'Autre',       emoji: '🌸' },
+  { value: 'all',        label: 'Tout',       emoji: '🌙' },
+  { value: 'general',    label: 'Général',    emoji: '💬' },
+  { value: 'conseils',   label: 'Conseils',   emoji: '💡' },
+  { value: 'sorties',    label: 'Sorties',    emoji: '🎉' },
+  { value: 'bien-etre',  label: 'Bien-être',  emoji: '🌿' },
+  { value: 'humour',     label: 'Humour',     emoji: '😄' },
+  { value: 'rencontres', label: 'Rencontres', emoji: '🤝' },
 ];
 
 export interface CommunityComment {
@@ -550,32 +570,100 @@ export interface CommunityPost {
   authorName: string;
   authorImage?: string;
   identityVerified?: boolean;
+  title: string;
   content: string;
   category: CommunityCategory;
   likesCount: number;
   isLiked: boolean;
+  isPinned: boolean;
   comments: CommunityComment[];
   createdAt: string;
 }
 
-export function fetchCommunity(params?: { category?: CommunityCategory | 'all'; before?: string; limit?: number }) {
-  return http.get<{ success: true; posts: CommunityPost[]; nextBefore?: string }>('/api/community', params);
+/** Auteur tel que peuplé par le serveur (`userId`), ou simple identifiant. */
+type ServerAuthor = { _id?: string; pseudonyme?: string; image?: string; identityVerified?: boolean } | string | null | undefined;
+
+interface ServerCommunityPost {
+  _id: string;
+  userId?: ServerAuthor;
+  title?: string;
+  content: string;
+  category: CommunityCategory;
+  likes?: string[];
+  likesCount?: number;
+  likedByMe?: boolean;
+  isPinned?: boolean;
+  comments?: { _id: string; userId?: ServerAuthor; content: string; createdAt: string }[];
+  createdAt: string;
 }
 
-export function createCommunityPost(payload: { content: string; category: CommunityCategory }) {
-  return http.post<{ success: true; post: CommunityPost }>('/api/community', payload);
+function authorOf(author: ServerAuthor) {
+  if (author && typeof author === 'object') {
+    return { id: author._id ?? '', name: author.pseudonyme || 'Membre', image: author.image || undefined, verified: author.identityVerified };
+  }
+  return { id: typeof author === 'string' ? author : '', name: 'Membre', image: undefined, verified: undefined };
 }
 
-export function likeCommunityPost(postId: string) {
-  return http.post<{ success: true; isLiked: boolean; likesCount: number }>(
-    `/api/community/${postId}`, { action: 'like' }
-  );
+/** Convertit un post du serveur vers la forme utilisée par les écrans. */
+function toCommunityPost(post: ServerCommunityPost): CommunityPost {
+  const author = authorOf(post.userId);
+  return {
+    _id: post._id,
+    authorId: author.id,
+    authorName: author.name,
+    authorImage: author.image,
+    identityVerified: author.verified,
+    title: post.title ?? '',
+    content: post.content,
+    category: post.category,
+    likesCount: post.likesCount ?? post.likes?.length ?? 0,
+    isLiked: post.likedByMe ?? false,
+    isPinned: post.isPinned ?? false,
+    comments: (post.comments ?? []).map((c) => {
+      const commentAuthor = authorOf(c.userId);
+      return {
+        _id: c._id,
+        authorId: commentAuthor.id,
+        authorName: commentAuthor.name,
+        authorImage: commentAuthor.image,
+        content: c.content,
+        createdAt: c.createdAt,
+      };
+    }),
+    createdAt: post.createdAt,
+  };
 }
 
-export function commentCommunityPost(postId: string, content: string) {
-  return http.post<{ success: true; comment: CommunityComment }>(
-    `/api/community/${postId}`, { action: 'comment', content }
-  );
+/**
+ * GET /api/community — le serveur renvoie tous les posts de la catégorie en
+ * une fois (pas de pagination) : `nextBefore` reste donc toujours vide.
+ */
+export async function fetchCommunity(params?: { category?: CommunityCategory | 'all'; before?: string; limit?: number }) {
+  const res = await http.get<{ success: true; posts: ServerCommunityPost[] }>('/api/community', {
+    category: params?.category && params.category !== 'all' ? params.category : undefined,
+  });
+  return {
+    success: true as const,
+    posts: (res.posts ?? []).map(toCommunityPost),
+    nextBefore: undefined as string | undefined,
+  };
+}
+
+/** POST /api/community — le serveur exige un titre et l'emoji de la catégorie. */
+export async function createCommunityPost(payload: { title: string; content: string; category: CommunityCategory }) {
+  const emoji = COMMUNITY_CATEGORIES.find((c) => c.value === payload.category)?.emoji ?? '💬';
+  const res = await http.post<{ success: true; post?: ServerCommunityPost }>('/api/community', { ...payload, emoji });
+  return { success: true as const, post: res.post ? toCommunityPost(res.post) : undefined };
+}
+
+export async function likeCommunityPost(postId: string) {
+  const res = await http.post<{ success: true; post?: ServerCommunityPost }>(`/api/community/${postId}`, { action: 'like' });
+  return { success: true as const, post: res.post ? toCommunityPost(res.post) : undefined };
+}
+
+export async function commentCommunityPost(postId: string, content: string) {
+  const res = await http.post<{ success: true; post?: ServerCommunityPost }>(`/api/community/${postId}`, { action: 'comment', content });
+  return { success: true as const, post: res.post ? toCommunityPost(res.post) : undefined };
 }
 
 export function deleteCommunityPost(postId: string) {

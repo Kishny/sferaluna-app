@@ -4,7 +4,7 @@ import { StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import {
-  House, Compass, ChatCircle, Bell, User, Gear,
+  House, Compass, ChatCircle, Bell, User, Gear, UsersThree,
 } from 'phosphor-react-native';
 import { Colors } from '../../../lib/theme';
 import { hapticLight } from '../../../lib/haptics';
@@ -34,6 +34,7 @@ function makeTabIcon(Icon: React.ComponentType<any>) {
 }
 
 const HomeIcon      = makeTabIcon(House);
+const CommunityIcon = makeTabIcon(UsersThree);
 const DiscoverIcon  = makeTabIcon(Compass);
 const MessagesIcon  = makeTabIcon(ChatCircle);
 const AlertsIcon    = makeTabIcon(Bell);
@@ -80,6 +81,13 @@ export default function TabsLayout() {
           tabBarIcon: (props) => <HomeIcon {...props} />,
         }}
       />
+      <Tabs.Screen
+        name="communaute"
+        options={{
+          title: 'Communauté',
+          tabBarIcon: (props) => <CommunityIcon {...props} />,
+        }}
+      />
       {/* Annuaire des membres : route navigable depuis le hub Accueil et
           l'écran Messages, sans onglet dédié dans la barre. */}
       <Tabs.Screen
@@ -116,6 +124,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
+          // Accessible depuis l'onglet Profil : plus d'onglet dédié.
+          href: null,
           title: 'Réglages',
           tabBarIcon: (props) => <SettingsIcon {...props} />,
         }}
@@ -132,7 +142,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
   },
   badge: {

@@ -31,6 +31,7 @@ import {
   demoVisitorsResponse,
   demoVibePlansResponse,
   demoSession,
+  demoCommunityResponse,
 } from './demoData';
 import type { PublicProfileFull } from './api';
 
@@ -98,6 +99,7 @@ export function resolveDemoRequest<T>(
   if (clean === '/api/vibesphere') return demoVibesResponse as T;
   if (clean === '/api/vibementor') return demoMentorResponse as T;
   if (clean === '/api/events') return demoEventsResponse as T;
+  if (clean === '/api/community') return demoCommunityResponse as T;
   if (clean === '/api/circle') return demoCircleResponse as T;
   if (clean === '/api/visitors') return demoVisitorsResponse as T;
   if (clean === '/api/vibeplanner') {

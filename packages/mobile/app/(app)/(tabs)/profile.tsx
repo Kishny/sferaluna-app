@@ -11,7 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import {
   PencilSimple, Camera, Check, MapPin, X, Crown, Sparkle, Heart, Star, Quotes,
   Compass, ChatCircleText, ShieldCheck, SealCheck, CalendarBlank, CaretRight, LockKey,
-  MoonStars, Lightning, Users, BookOpen, Question, GraduationCap, Envelope,
+  MoonStars, Lightning, Users, BookOpen, Question, GraduationCap, Envelope, Gear,
 } from 'phosphor-react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { GradientButton } from '../../../components/GradientButton';
@@ -323,6 +323,16 @@ export default function ProfileScreen() {
               <Text style={styles.subtitle}>Votre image, votre histoire, votre espace.</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 10 }}>
+              {!editing && (
+                <TouchableOpacity
+                  style={styles.editBtn}
+                  onPress={() => router.push('/(app)/(tabs)/settings')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Réglages"
+                >
+                  <NP><Gear size={20} color={Colors.textSecondary} /></NP>
+                </TouchableOpacity>
+              )}
               {editing && (
                 <TouchableOpacity style={styles.editBtn} onPress={handleCancel}>
                   <NP><X size={20} color={Colors.textSecondary} /></NP>
@@ -662,7 +672,7 @@ export default function ProfileScreen() {
                     { icon: <CalendarBlank size={14} color="#818cf8" weight="regular" />, label: 'VibePlanner', route: '/(app)/vibeplanner', bg: 'rgba(129,140,248,0.13)' },
                     { icon: <NP><ShieldCheck size={14} color="#34d399" weight="regular" /></NP>, label: 'Circle of Six', route: '/(app)/circle', bg: 'rgba(52,211,153,0.13)' },
                     { icon: <CalendarBlank size={14} color="#f472b6" weight="regular" />, label: 'Événements', route: '/(app)/evenements', bg: 'rgba(244,114,182,0.13)' },
-                    { icon: <ChatCircleText size={14} color="#4ade80" weight="regular" />, label: 'Communauté', route: '/(app)/communaute', bg: 'rgba(74,222,128,0.13)' },
+                    { icon: <ChatCircleText size={14} color="#4ade80" weight="regular" />, label: 'Communauté', route: '/(app)/(tabs)/communaute', bg: 'rgba(74,222,128,0.13)' },
                     { icon: <Question size={14} color="#34d399" weight="regular" />, label: 'FAQ', route: '/(app)/faq', bg: 'rgba(52,211,153,0.13)' },
                     { icon: <GraduationCap size={14} color="#60a5fa" weight="regular" />, label: 'Guide', route: '/(app)/guide', bg: 'rgba(96,165,250,0.13)' },
                     { icon: <Users size={14} color="#c084fc" weight="regular" />, label: 'Équipe', route: '/(app)/equipe', bg: 'rgba(192,132,252,0.13)' },
@@ -745,9 +755,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
   subtitle: { fontSize: 12.5, color: Colors.textMuted, marginTop: 3 },
   editBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.glassBg,
     borderWidth: 1,
     borderColor: Colors.glassBorder,

@@ -17,7 +17,7 @@ import {
 import { LinearGradient } from '../../../components/LinearGradient';
 import { OrbitGlow } from '../../../components/OrbitGlow';
 import { Colors, Spacing, Radius, Typography } from '../../../lib/theme';
-import { fetchMyProfile } from '../../../lib/api';
+import { fetchMyProfile, fetchCommunity, fetchEvents } from '../../../lib/api';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -59,12 +59,29 @@ const COMMUNITY_ITEMS: HubItem[] = [
   },
 ];
 
+function formatEventDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
 export default function AccueilScreen() {
   const { data } = useQuery({ queryKey: ['profile', 'me'], queryFn: fetchMyProfile });
   const name =
     typeof data?.user.pseudonyme === 'string' && data.user.pseudonyme
       ? data.user.pseudonyme
       : null;
+
+  // Aperçu de la vie de la communauté : les écrans dédiés restent la source.
+  const { data: communityData } = useQuery({
+    queryKey: ['accueil', 'community'],
+    queryFn: () => fetchCommunity(),
+    staleTime: 60_000,
+  });
+  const latestPosts = (communityData?.posts ?? []).slice(0, 2);
+
+  const { data: eventsData } = useQuery({ queryKey: ['events'], queryFn: fetchEvents });
+  const nextEvent = (eventsData?.events ?? [])
+    .filter((e) => new Date(e.date).getTime() > Date.now())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
 
   return (
     <View style={styles.root}>
@@ -152,6 +169,41 @@ export default function AccueilScreen() {
             ))}
           </View>
 
+          {/* Dernières publications de la communauté */}
+          {latestPosts.length > 0 && (
+            <>
+              <View style={styles.sectionRow}>
+                <Text style={[styles.sectionLabel, styles.sectionLabelInRow]}>En ce moment</Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/(app)/(tabs)/communaute')}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Voir toute la communauté"
+                >
+                  <Text style={styles.sectionLink}>Tout voir</Text>
+                </TouchableOpacity>
+              </View>
+              {latestPosts.map((post) => (
+                <TouchableOpacity
+                  key={post._id}
+                  style={styles.postPreview}
+                  activeOpacity={0.8}
+                  onPress={() => router.push('/(app)/(tabs)/communaute')}
+                >
+                  <Text style={styles.postPreviewMeta} numberOfLines={1}>
+                    {post.authorName} · {post.comments.length} réponse{post.comments.length > 1 ? 's' : ''}
+                  </Text>
+                  <Text style={styles.postPreviewTitle} numberOfLines={1}>
+                    {post.title || post.content}
+                  </Text>
+                  {post.title ? (
+                    <Text style={styles.postPreviewText} numberOfLines={2}>{post.content}</Text>
+                  ) : null}
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
+
           {/* Événements */}
           <Text style={styles.sectionLabel}>À ne pas manquer</Text>
           <TouchableOpacity
@@ -168,9 +220,13 @@ export default function AccueilScreen() {
               <Sparkle size={22} color={Colors.textPrimary} weight="bold" />
             </LinearGradient>
             <View style={styles.itemBody}>
-              <Text style={styles.itemTitle}>Événements Luna</Text>
-              <Text style={styles.itemSubtitle}>
-                Sorties et ateliers organisés par la communauté
+              <Text style={styles.itemTitle} numberOfLines={1}>
+                {nextEvent ? nextEvent.title : 'Événements Luna'}
+              </Text>
+              <Text style={styles.itemSubtitle} numberOfLines={2}>
+                {nextEvent
+                  ? `${formatEventDate(nextEvent.date)} · ${nextEvent.location}`
+                  : 'Sorties et ateliers organisés par la communauté'}
               </Text>
             </View>
             <CaretRight size={18} color={Colors.textMuted} weight="bold" />
@@ -217,6 +273,25 @@ export default function AccueilScreen() {
 }
 
 const styles = StyleSheet.create({
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  sectionLabelInRow: { flex: 1 },
+  sectionLink: { fontSize: 13, fontWeight: '600', color: Colors.accentPink, marginBottom: Spacing.md },
+  postPreview: {
+    backgroundColor: Colors.glassBg,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  postPreviewMeta: { fontSize: 12, color: Colors.textMuted, marginBottom: 3 },
+  postPreviewTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  postPreviewText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18, marginTop: 3 },
   root: { flex: 1, backgroundColor: Colors.bgDeep },
   safe: { flex: 1 },
   scroll: {

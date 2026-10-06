@@ -6,19 +6,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LinearGradient } from '../../components/LinearGradient';
-import { OrbitGlow } from '../../components/OrbitGlow';
+import { LinearGradient } from '../../../components/LinearGradient';
+import { OrbitGlow } from '../../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import {
-  ArrowLeft, Heart, ChatCircleText, Plus, X, PaperPlaneTilt, MoonStars,
+  Heart, ChatCircleText, Plus, X, PaperPlaneTilt, MoonStars, UsersThree, Lightbulb, CalendarBlank, PushPin,
 } from 'phosphor-react-native';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius, ACCENT_BARS } from '../../lib/theme';
+import { Colors, Spacing, Radius, ACCENT_BARS } from '../../../lib/theme';
 import {
   fetchCommunity, createCommunityPost, likeCommunityPost,
   commentCommunityPost, CommunityPost, CommunityCategory, COMMUNITY_CATEGORIES,
-} from '../../lib/api';
-import { NP } from '../../components/NP';
+} from '../../../lib/api';
+import { NP } from '../../../components/NP';
+import { ApiError } from '../../../lib/http';
 
 // ── Pressy ────────────────────────────────────
 function Pressy({ children, onPress, style }: {
@@ -77,6 +78,13 @@ function PostCard({ post, index, onLike, onComment }: {
       </View>
 
       {/* Content */}
+      {post.isPinned && (
+        <View style={styles.pinnedRow}>
+          <PushPin size={12} color={Colors.accentPink} weight="fill" />
+          <Text style={styles.pinnedText}>Épinglé par l'équipe</Text>
+        </View>
+      )}
+      {post.title ? <Text style={styles.postTitle}>{post.title}</Text> : null}
       <Text style={styles.postContent}>{post.content}</Text>
 
       {/* Actions */}
@@ -125,14 +133,16 @@ function PostCard({ post, index, onLike, onComment }: {
 function CreatePostModal({ visible, onClose, onCreated }: {
   visible: boolean; onClose: () => void; onCreated: () => void;
 }) {
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<CommunityCategory>('general');
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: () => createCommunityPost({ content: content.trim(), category }),
+    mutationFn: () => createCommunityPost({ title: title.trim(), content: content.trim(), category }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community'] });
+      setTitle('');
       setContent('');
       setCategory('general');
       onCreated();
@@ -147,7 +157,7 @@ function CreatePostModal({ visible, onClose, onCreated }: {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <View style={styles.modalBg}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Nouveau post</Text>
+            <Text style={styles.modalTitle}>Nouvelle publication</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <NP><X size={22} color={Colors.textPrimary} /></NP>
             </TouchableOpacity>
@@ -170,6 +180,18 @@ function CreatePostModal({ visible, onClose, onCreated }: {
               ))}
             </ScrollView>
 
+            <Text style={styles.modalLabel}>Titre</Text>
+            <TextInput
+              style={styles.modalTitleInput}
+              placeholder="De quoi voulez-vous parler ?"
+              placeholderTextColor={Colors.textMuted}
+              value={title}
+              onChangeText={setTitle}
+              maxLength={150}
+              autoFocus
+              returnKeyType="next"
+            />
+
             <Text style={styles.modalLabel}>Votre message</Text>
             <TextInput
               style={styles.modalTextarea}
@@ -178,18 +200,24 @@ function CreatePostModal({ visible, onClose, onCreated }: {
               value={content}
               onChangeText={setContent}
               multiline
-              maxLength={800}
-              autoFocus
+              maxLength={2000}
               textAlignVertical="top"
             />
-            <Text style={styles.charCount}>{content.length}/800</Text>
+            <Text style={styles.charCount}>{content.length}/2000</Text>
+            {createMutation.isError && (
+              <Text style={styles.formError} accessibilityRole="alert">
+                {createMutation.error instanceof ApiError
+                  ? createMutation.error.message
+                  : 'Publication impossible pour le moment. Réessayez.'}
+              </Text>
+            )}
           </ScrollView>
 
           <View style={styles.modalFooter}>
             <TouchableOpacity
-              style={[styles.sendBtn, (!content.trim() || createMutation.isPending) && styles.sendBtnDisabled]}
+              style={[styles.sendBtn, (!title.trim() || !content.trim() || createMutation.isPending) && styles.sendBtnDisabled]}
               onPress={() => createMutation.mutate()}
-              disabled={!content.trim() || createMutation.isPending}
+              disabled={!title.trim() || !content.trim() || createMutation.isPending}
               activeOpacity={0.85}
             >
               <NP><PaperPlaneTilt size={16} color="#fff" weight="fill" />
@@ -263,6 +291,13 @@ function CommentModal({ post, visible, onClose }: {
   );
 }
 
+// ── Espaces voisins ───────────────────────────
+const SPACES = [
+  { label: 'VibeSphere', route: '/(app)/vibesphere', icon: UsersThree, color: '#D9B8FF' },
+  { label: 'VibeMentor', route: '/(app)/vibementor', icon: Lightbulb, color: '#FFD166' },
+  { label: 'Événements', route: '/(app)/evenements', icon: CalendarBlank, color: '#FF8E8E' },
+];
+
 // ── Main Screen ───────────────────────────────
 export default function CommunauteScreen() {
   const queryClient = useQueryClient();
@@ -296,16 +331,36 @@ export default function CommunauteScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <NP><ArrowLeft size={22} color={Colors.textPrimary} />
-          </NP></TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Communauté Luna</Text>
-            <Text style={styles.subtitle}>Partagez, échangez, inspirez</Text>
+            <Text style={styles.title}>Communauté</Text>
+            <Text style={styles.subtitle}>Partagez, échangez, entraidez-vous</Text>
           </View>
-          <TouchableOpacity style={styles.newBtn} onPress={() => setShowCreate(true)} activeOpacity={0.85}>
-            <NP><Plus size={18} color="#fff" weight="bold" />
+          <TouchableOpacity
+            style={styles.newBtn}
+            onPress={() => setShowCreate(true)}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Nouvelle publication"
+          >
+            <NP><Plus size={20} color="#fff" weight="bold" />
           </NP></TouchableOpacity>
+        </View>
+
+        {/* Les autres espaces de la communauté */}
+        <View style={styles.spaces}>
+          {SPACES.map((space) => (
+            <TouchableOpacity
+              key={space.route}
+              style={styles.space}
+              activeOpacity={0.85}
+              onPress={() => router.push(space.route as never)}
+              accessibilityRole="button"
+              accessibilityLabel={space.label}
+            >
+              <NP><space.icon size={18} color={space.color} weight="bold" /></NP>
+              <Text style={styles.spaceText} numberOfLines={1}>{space.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Category filter */}
@@ -334,7 +389,7 @@ export default function CommunauteScreen() {
           </View>
         ) : isError ? (
           <View style={styles.centerState}>
-            <Text style={styles.emptyText}>Impossible de charger les posts.</Text>
+            <Text style={styles.emptyText}>Impossible de charger les publications.</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
               <Text style={styles.retryText}>Réessayer</Text>
             </TouchableOpacity>
@@ -342,10 +397,12 @@ export default function CommunauteScreen() {
         ) : posts.length === 0 ? (
           <View style={styles.centerState}>
             <MoonStars size={40} color={Colors.textMuted} weight="regular" />
-            <Text style={styles.emptyTitle}>Aucun post dans cette catégorie</Text>
-            <Text style={styles.emptyText}>Soyez la première à partager !</Text>
+            <Text style={styles.emptyTitle}>
+              {activeCategory === 'all' ? 'Aucune publication pour l’instant' : 'Rien dans cette catégorie pour l’instant'}
+            </Text>
+            <Text style={styles.emptyText}>Lancez la première discussion.</Text>
             <TouchableOpacity style={styles.createFirstBtn} onPress={() => setShowCreate(true)} activeOpacity={0.85}>
-              <Text style={styles.createFirstBtnText}>Créer un post</Text>
+              <Text style={styles.createFirstBtnText}>Écrire une publication</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -444,7 +501,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 4,
   },
   catBadgeText: { fontSize: 11, color: Colors.textMuted, fontWeight: '500' },
+  pinnedRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  pinnedText: { fontSize: 11, fontWeight: '700', color: Colors.accentPink },
+  postTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, lineHeight: 22 },
   postContent: { fontSize: 14, color: Colors.textSecondary, lineHeight: 21 },
+  spaces: { flexDirection: 'row', gap: 8, paddingHorizontal: Spacing.xl, paddingTop: 4 },
+  space: {
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4,
+    minHeight: 58, paddingHorizontal: 6, paddingVertical: 8, borderRadius: Radius.md,
+    backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
+  },
+  spaceText: { fontSize: 12, fontWeight: '600', color: Colors.textPrimary },
+  modalTitleInput: {
+    backgroundColor: Colors.glassBg, borderWidth: 1, borderColor: Colors.glassBorder,
+    borderRadius: Radius.lg, paddingHorizontal: 14, minHeight: 48, color: Colors.textPrimary, fontSize: 15,
+  },
+  formError: { fontSize: 13, color: '#FECACA', lineHeight: 18 },
   postActions: { flexDirection: 'row', gap: 16 },
   actionBtn: {},
   actionBtnInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
