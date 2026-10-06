@@ -240,10 +240,24 @@ export async function restorePlan(askApple: boolean): Promise<ApplePurchaseResul
   return deliver(iap, ours[0]);
 }
 
-/** Ouvre la page « Abonnements » du compte Apple (changer de formule, résilier). */
+/**
+ * Ouvre la gestion des abonnements d'Apple (changer de formule, résilier).
+ *
+ * On affiche d'abord la feuille d'Apple par-dessus l'app : elle montre
+ * l'abonnement SferaLuna directement, y compris pendant les tests (TestFlight),
+ * où il n'apparaît pas dans la liste générale des abonnements de l'iPhone.
+ * Si elle ne peut pas s'ouvrir, on bascule sur cette liste générale.
+ */
 export async function openAppleSubscriptions(): Promise<boolean> {
   const iap = loadModule();
   if (!iap) return false;
+  try {
+    await connect();
+    await iap.showManageSubscriptionsIOS();
+    return true;
+  } catch {
+    // Feuille indisponible : on tente la page « Abonnements » de l'App Store.
+  }
   try {
     await iap.deepLinkToSubscriptions();
     return true;

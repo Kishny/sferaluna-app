@@ -216,7 +216,13 @@ export default function PremiumScreen() {
     const opened = await openAppleSubscriptions();
     if (!opened) {
       setError('Ouvrez l’app Réglages de votre iPhone, touchez votre nom, puis « Abonnements ».');
+      return;
     }
+    // Au retour, la membre a pu changer de formule ou résilier : Apple prévient
+    // le serveur, on relit donc l'état (tout de suite, puis après un court délai
+    // le temps que la notification arrive).
+    await refreshAccount();
+    setTimeout(() => { refreshAccount(); }, 4000);
   };
 
   const openPage = (path: string) => {

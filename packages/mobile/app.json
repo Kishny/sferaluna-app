@@ -17,8 +17,8 @@
         "NSPhotoLibraryUsageDescription": "SferaLuna accède à vos photos pour votre photo de profil.",
         "NSPhotoLibraryAddUsageDescription": "SferaLuna peut enregistrer des photos dans votre galerie.",
         "NSFaceIDUsageDescription": "SferaLuna utilise Face ID pour sécuriser votre connexion.",
-        "NSLocationWhenInUseUsageDescription": "SferaLuna peut utiliser votre position pour afficher les profils proches de vous.",
-        "NSUserNotificationsUsageDescription": "SferaLuna vous envoie des notifications pour vos nouveaux messages et matches.",
+        "NSLocationWhenInUseUsageDescription": "SferaLuna peut utiliser votre position pour vous montrer les événements et les membres de votre région.",
+        "NSUserNotificationsUsageDescription": "SferaLuna vous envoie des notifications pour vos messages, vos invitations et l'activité de la communauté.",
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
           {
