@@ -28,19 +28,19 @@ const slides: Slide[] = [
     id: '1',
     logo: true,
     title: 'Bienvenue sur SferaLuna',
-    subtitle: 'La communauté vérifiée des femmes de 28 ans et plus : échanger, s’entraider, sortir, et créer des liens sincères.',
+    subtitle: 'Le service de rencontre entre femmes de 28 ans et plus. Chaque membre vérifie son identité avant d’entrer.',
   },
   {
     id: '2',
     emoji: '✨',
-    title: 'Des connexions sincères',
-    subtitle: 'Un fil d’humeurs, de l’entraide, des événements, et des membres avec qui échanger. Qualité plutôt que quantité.',
+    title: 'Des rencontres sans swipe',
+    subtitle: 'Parcourez les profils à votre rythme, envoyez une invitation, et retrouvez une communauté : forum, entraide, événements.',
   },
   {
     id: '3',
     emoji: '💫',
     title: 'Votre sécurité avant tout',
-    subtitle: 'Profils vérifiés, espace bienveillant, modération active. Vous méritez un endroit où vous sentir en sécurité.',
+    subtitle: 'Identité vérifiée pour toutes, signalement et blocage, et Circle of Six pour prévenir vos proches quand vous sortez.',
   },
 ];
 
