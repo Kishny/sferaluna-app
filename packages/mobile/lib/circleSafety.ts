@@ -1,5 +1,5 @@
 /**
- * Circle of Six — réseau de sécurité personnel.
+ * L'Hexade (anciennement « Circle of Six ») — réseau de sécurité personnel.
  *
  * Les « contacts de confiance » sont désormais persistés **côté serveur**
  * (champ User.trustedContacts, routes /api/users/trusted-contacts) pour être

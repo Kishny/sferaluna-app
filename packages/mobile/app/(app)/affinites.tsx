@@ -3,7 +3,7 @@
  * les affinités (score de compatibilité + like).
  *
  * NB : c'était historiquement l'écran « Circle of Six ». Il a été renommé car
- * « Circle of Six » désigne désormais le vrai réseau de sécurité personnel
+ * ce nom a ensuite désigné le réseau de sécurité personnel, aujourd'hui « l'Hexade »
  * (voir app/(app)/circle.tsx). Cet écran-ci reste une fonctionnalité de
  * découverte/mise en relation, honnêtement nommée.
  */

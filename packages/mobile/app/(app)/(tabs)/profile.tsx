@@ -670,7 +670,7 @@ export default function ProfileScreen() {
                     { icon: <Lightning size={14} color="#a855f7" weight="regular" />, label: 'VibeSphere', route: '/(app)/vibesphere', bg: 'rgba(168,85,247,0.13)' },
                     { icon: <BookOpen size={14} color="#ec4899" weight="regular" />, label: 'VibeMentor', route: '/(app)/vibementor', bg: 'rgba(236,72,153,0.13)' },
                     { icon: <CalendarBlank size={14} color="#818cf8" weight="regular" />, label: 'VibePlanner', route: '/(app)/vibeplanner', bg: 'rgba(129,140,248,0.13)' },
-                    { icon: <NP><ShieldCheck size={14} color="#34d399" weight="regular" /></NP>, label: 'Circle of Six', route: '/(app)/circle', bg: 'rgba(52,211,153,0.13)' },
+                    { icon: <NP><ShieldCheck size={14} color="#34d399" weight="regular" /></NP>, label: 'L’Hexade', route: '/(app)/circle', bg: 'rgba(52,211,153,0.13)' },
                     { icon: <CalendarBlank size={14} color="#f472b6" weight="regular" />, label: 'Événements', route: '/(app)/evenements', bg: 'rgba(244,114,182,0.13)' },
                     { icon: <ChatCircleText size={14} color="#4ade80" weight="regular" />, label: 'Communauté', route: '/(app)/(tabs)/communaute', bg: 'rgba(74,222,128,0.13)' },
                     { icon: <Question size={14} color="#34d399" weight="regular" />, label: 'FAQ', route: '/(app)/faq', bg: 'rgba(52,211,153,0.13)' },

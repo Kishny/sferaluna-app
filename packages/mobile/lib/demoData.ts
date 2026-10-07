@@ -399,7 +399,7 @@ export const demoMentorPosts: MentorPost[] = [
       {
         _id: 'demo-ans-1',
         userId: { _id: IDS.ines, pseudonyme: 'Inès', image: W(20) },
-        content: "J'utilise le Circle of Six : je partage le lieu et l'heure à deux amies de confiance avant chaque rencontre. Ça change tout niveau sérénité.",
+        content: "J'utilise l'Hexade : je partage le lieu et l'heure à deux amies de confiance avant chaque rencontre. Ça change tout niveau sérénité.",
         likes: [IDS.clara, IDS.jade, IDS.sofia], isAccepted: true, createdAt: hr(8),
       },
       {

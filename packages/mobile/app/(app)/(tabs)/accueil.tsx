@@ -1,7 +1,7 @@
 /**
  * Accueil — hub de la communauté.
  *
- * Premier écran de l'app : profil vérifié, sécurité (Circle of Six),
+ * Premier écran de l'app : profil vérifié, sécurité (l'Hexade),
  * communauté (VibeSphere, VibeMentor, VibePlanner), événements Luna, puis
  * l'annuaire des membres et les affinités de la semaine.
  */
@@ -133,10 +133,11 @@ export default function AccueilScreen() {
                 <ShieldCheck size={28} color={Colors.textPrimary} weight="fill" />
               </View>
               <View style={styles.safetyBody}>
-                <Text style={styles.safetyTitle}>Circle of Six</Text>
+                <Text style={styles.safetyTitle}>L’Hexade*</Text>
                 <Text style={styles.safetySubtitle}>
-                  Votre réseau de sécurité personnel. Partagez vos plans avec
-                  des contacts de confiance.
+                  Vos six proches de confiance. Partagez vos plans et
+                  prévenez-les que vous êtes bien rentrée.
+                  {'\n'}* Du grec hexás, « groupe de six ».
                 </Text>
               </View>
               <CaretRight size={20} color={Colors.textPrimary} weight="bold" />

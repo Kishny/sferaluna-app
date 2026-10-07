@@ -1,5 +1,8 @@
 /**
- * Circle of Six — réseau de sécurité personnel.
+ * L'Hexade (anciennement « Circle of Six ») — réseau de sécurité personnel.
+ *
+ * Hexade : du grec hexás, « groupe de six ». Le nom est toujours accompagné de
+ * sa définition (astérisque) là où il est présenté.
  *
  * Vrai module de sécurité (et non de mise en relation) : l'utilisatrice ajoute
  * jusqu'à 6 contacts de confiance (stockés localement, chiffrés, jamais envoyés
@@ -88,7 +91,7 @@ export default function CircleScreen() {
   const handleRemove = (contact: TrustedContact) => {
     Alert.alert(
       'Retirer ce contact ?',
-      `${contact.name} ne fera plus partie de votre Circle of Six.`,
+      `${contact.name} ne fera plus partie de votre Hexade.`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -120,7 +123,7 @@ export default function CircleScreen() {
           <View style={styles.headerCenter}>
             <View style={styles.titleRow}>
               <ShieldCheck size={18} color={Colors.accentPink} weight="fill" />
-              <Text style={styles.title}>Circle of Six</Text>
+              <Text style={styles.title}>L’Hexade*</Text>
             </View>
             <Text style={styles.subtitle}>Votre réseau de sécurité personnel</Text>
           </View>
@@ -146,6 +149,10 @@ export default function CircleScreen() {
                 Vos contacts restent privés, sur votre téléphone.
               </Text>
             </View>
+            <Text style={styles.definition}>
+              * Hexade : du grec hexás, « groupe de six ». Pour les pythagoriciens,
+              le six est le nombre de l’harmonie et de l’union.
+            </Text>
 
             {/* Actions rapides */}
             <Text style={styles.sectionLabel}>Actions rapides</Text>
@@ -283,7 +290,7 @@ export default function CircleScreen() {
             />
 
             <GradientButton
-              label="Ajouter à mon Circle of Six"
+              label="Ajouter à mon Hexade"
               onPress={handleAdd}
               loading={saving}
               style={styles.modalCta}
@@ -344,6 +351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   introText: { flex: 1, fontSize: 13, lineHeight: 18, color: Colors.textSecondary },
+  definition: { fontSize: 12, lineHeight: 17, fontStyle: 'italic', color: Colors.textMuted, marginTop: -4, marginBottom: Spacing.base, paddingHorizontal: 4 },
 
   sectionLabel: {
     ...Typography.caption,

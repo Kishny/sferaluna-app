@@ -40,7 +40,7 @@ const slides: Slide[] = [
     id: '3',
     emoji: '💫',
     title: 'Votre sécurité avant tout',
-    subtitle: 'Identité vérifiée pour toutes, signalement et blocage, et Circle of Six pour prévenir vos proches quand vous sortez.',
+    subtitle: 'Identité vérifiée pour toutes, signalement et blocage, et l’Hexade*, vos six proches de confiance à prévenir quand vous sortez. (* du grec hexás, « groupe de six »)',
   },
 ];
 
