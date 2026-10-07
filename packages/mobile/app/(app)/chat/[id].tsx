@@ -21,6 +21,7 @@ import { ApiError } from '../../../lib/http';
 import { getPusherClient, matchChannelName } from '../../../lib/realtime';
 import { hapticLight, hapticMedium, hapticWarning } from '../../../lib/haptics';
 import { NP } from '../../../components/NP';
+import { askReport } from '../../../lib/report';
 import { AvatarPlaceholder } from '../../../components/AvatarPlaceholder';
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
@@ -536,9 +537,8 @@ export default function ChatScreen() {
     hapticLight();
   };
 
-  const handleReportMsg = () => {
-    hapticWarning();
-    Alert.alert('Signaler ce message', 'Notre équipe va examiner ce signalement.');
+  const handleReportMsg = (msg: ChatMessage) => {
+    askReport({ targetType: 'message', targetId: msg._id });
   };
 
   // ─── Menu ⋯ ───────────────────────────────────────────────────────────────
@@ -574,7 +574,7 @@ export default function ChatScreen() {
     }
   };
 
-  const handleReport = () => { hapticWarning(); Alert.alert('Signaler', `Signaler ${contact?.pseudonyme ?? 'cette utilisatrice'} ?`, [{ text: 'Annuler', style: 'cancel' }, { text: 'Signaler', style: 'destructive', onPress: () => Alert.alert('Signalement envoyé') }]); };
+  const handleReport = () => { askReport({ targetType: 'user', targetId: contact?._id }); };
   const handleDelete = () => {
     hapticWarning();
     Alert.alert('Supprimer la conversation', 'Cette action est irréversible.', [

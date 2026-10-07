@@ -33,7 +33,12 @@ const now = Date.now();
 const min = (n: number) => new Date(now - n * 60_000).toISOString();
 const hr = (n: number) => new Date(now - n * 3_600_000).toISOString();
 const day = (n: number) => new Date(now - n * 86_400_000).toISOString();
-const inDays = (n: number) => new Date(now + n * 86_400_000).toISOString();
+// Dates à venir calées sur 19 h : une heure ronde, plus crédible pour un événement.
+const inDays = (n: number) => {
+  const date = new Date(now + n * 86_400_000);
+  date.setHours(19, 0, 0, 0);
+  return date.toISOString();
+};
 
 const W = (i: number) => `https://randomuser.me/api/portraits/women/${i}.jpg`;
 
@@ -361,8 +366,8 @@ export const demoVibes: VibePost[] = [
   {
     _id: 'demo-vibe-3',
     userId: { _id: IDS.sofia, pseudonyme: 'Sofia', image: W(63), age: 28, identityVerified: true },
-    content: "Je crois que je commence à croire aux belles rencontres sincères 💕",
-    mood: 'amoureuse', emoji: '💕', likesCount: 58, likedByMe: false,
+    content: "Premier semi-marathon bouclé ce matin. Merci à celles qui m'ont encouragée ici 💪",
+    mood: 'fière', emoji: '💪', likesCount: 58, likedByMe: false,
     createdAt: hr(11), updatedAt: hr(11),
   },
   {

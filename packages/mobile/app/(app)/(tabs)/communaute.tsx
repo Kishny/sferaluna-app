@@ -5,12 +5,12 @@ import {
   KeyboardAvoidingView, Platform, ScrollView, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from '../../../components/LinearGradient';
 import { OrbitGlow } from '../../../components/OrbitGlow';
 import { StatusBar } from 'expo-status-bar';
 import {
-  Heart, ChatCircleText, Plus, X, PaperPlaneTilt, MoonStars, UsersThree, Lightbulb, CalendarBlank, PushPin,
+  Heart, ChatCircleText, Plus, X, PaperPlaneTilt, MoonStars, UsersThree, Lightbulb, CalendarBlank, PushPin, Flag,
 } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius, ACCENT_BARS } from '../../../lib/theme';
@@ -20,6 +20,9 @@ import {
 } from '../../../lib/api';
 import { NP } from '../../../components/NP';
 import { ApiError } from '../../../lib/http';
+import { getSession } from '../../../lib/auth';
+import { askReport } from '../../../lib/report';
+import { hapticLight } from '../../../lib/haptics';
 
 // ── Pressy ────────────────────────────────────
 function Pressy({ children, onPress, style }: {
@@ -49,12 +52,21 @@ function timeAgo(iso: string): string {
 }
 
 // ── Post Card ─────────────────────────────────
-function PostCard({ post, index, onLike, onComment }: {
+function PostCard({ post, index, isMine, onLike, onComment }: {
   post: CommunityPost;
   index: number;
+  /** Ma propre publication : pas de signalement, pas de lien vers mon profil public. */
+  isMine: boolean;
   onLike: () => void;
   onComment: () => void;
 }) {
+  const [reported, setReported] = useState(false);
+  // Le profil de l'autrice donne accès au blocage et au signalement du compte.
+  const openAuthor = () => {
+    if (isMine || !post.authorId) return;
+    hapticLight();
+    router.push(`/(app)/profil/${post.authorId}` as never);
+  };
   const cat = COMMUNITY_CATEGORIES.find((c) => c.value === post.category);
   const accent = ACCENT_BARS[index % ACCENT_BARS.length];
 
@@ -63,13 +75,22 @@ function PostCard({ post, index, onLike, onComment }: {
       <LinearGradient colors={accent} style={styles.accentBar} />
       {/* Author row */}
       <View style={styles.authorRow}>
-        <View style={styles.authorAvatar}>
-          <Text style={styles.authorInitial}>{post.authorName?.[0]?.toUpperCase() ?? '?'}</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.authorName}>{post.authorName}</Text>
-          <Text style={styles.authorMeta}>{timeAgo(post.createdAt)}</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.authorLink}
+          onPress={openAuthor}
+          disabled={isMine || !post.authorId}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Voir le profil de ${post.authorName}`}
+        >
+          <View style={styles.authorAvatar}>
+            <Text style={styles.authorInitial}>{post.authorName?.[0]?.toUpperCase() ?? '?'}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.authorName}>{post.authorName}</Text>
+            <Text style={styles.authorMeta}>{timeAgo(post.createdAt)}</Text>
+          </View>
+        </TouchableOpacity>
         {cat && (
           <View style={styles.catBadge}>
             <Text style={styles.catBadgeText}>{cat.emoji} {cat.label}</Text>
@@ -107,6 +128,19 @@ function PostCard({ post, index, onLike, onComment }: {
             <Text style={styles.actionCount}>{post.comments.length}</Text>
           </View>
         </Pressy>
+        {!isMine && (
+          <TouchableOpacity
+            style={styles.reportBtn}
+            onPress={() => askReport({ targetType: 'community_post', targetId: post._id, onSent: () => setReported(true) })}
+            disabled={reported}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Signaler cette publication"
+          >
+            <NP><Flag size={15} color={reported ? Colors.accentPink : Colors.textMuted} weight={reported ? 'fill' : 'regular'} /></NP>
+            <Text style={[styles.reportText, reported && { color: Colors.accentPink }]}>{reported ? 'Signalée' : 'Signaler'}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Comments (2 premiers) */}
@@ -304,6 +338,8 @@ export default function CommunauteScreen() {
   const [activeCategory, setActiveCategory] = useState<CommunityCategory | 'all'>('all');
   const [showCreate, setShowCreate] = useState(false);
   const [commentTarget, setCommentTarget] = useState<CommunityPost | null>(null);
+  const { data: session } = useQuery({ queryKey: ['session'], queryFn: getSession });
+  const myId = session?.user?._id ?? session?.user?.id;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, refetch, isRefetching } = useInfiniteQuery({
     queryKey: ['community', activeCategory],
@@ -421,6 +457,7 @@ export default function CommunauteScreen() {
               <PostCard
                 post={item}
                 index={index}
+                isMine={!!myId && item.authorId === myId}
                 onLike={() => likeMutation.mutate(item._id)}
                 onComment={() => setCommentTarget(item)}
               />
@@ -517,8 +554,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg, paddingHorizontal: 14, minHeight: 48, color: Colors.textPrimary, fontSize: 15,
   },
   formError: { fontSize: 13, color: '#FECACA', lineHeight: 18 },
-  postActions: { flexDirection: 'row', gap: 16 },
+  postActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   actionBtn: {},
+  authorLink: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  reportBtn: { marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 32 },
+  reportText: { fontSize: 12, color: Colors.textMuted },
   actionBtnInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   actionCount: { fontSize: 13, color: Colors.textMuted, fontWeight: '600' },
   commentsSection: { gap: 6, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', paddingTop: 8 },

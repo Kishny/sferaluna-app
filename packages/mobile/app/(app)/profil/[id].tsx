@@ -22,6 +22,7 @@ import { fetchPublicProfile, likeProfile, fetchMatches, recordProfileVisit, bloc
 import { ApiError } from '../../../lib/http';
 import { NP } from '../../../components/NP';
 import { hapticWarning, hapticSuccess } from '../../../lib/haptics';
+import { askReport } from '../../../lib/report';
 
 const AVATAR_SIZE = 100;
 
@@ -61,18 +62,7 @@ export default function PublicProfileScreen() {
   );
 
   const handleReport = () => {
-    Alert.alert(
-      "Signaler ce profil",
-      "Voulez-vous signaler ce profil à l'équipe de modération ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Signaler",
-          style: "destructive",
-          onPress: () => setReported(true),
-        },
-      ]
-    );
+    askReport({ targetType: 'user', targetId: id, onSent: () => setReported(true) });
   };
 
   const handleBlock = () => {

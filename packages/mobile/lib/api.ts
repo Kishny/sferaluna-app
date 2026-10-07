@@ -883,6 +883,14 @@ export async function deleteMyAccount() {
   return apiFetch('/api/users/me', { method: 'DELETE' });
 }
 
+export type ReportTargetType = 'user' | 'message' | 'community_post';
+export type ReportReason = 'spam' | 'harcèlement' | 'contenu_inapproprié' | 'faux_profil' | 'autre';
+
+/** Signaler un profil, un message ou une publication à la modération — POST /api/reports */
+export function sendReport(payload: { targetType: ReportTargetType; targetId: string; reason: ReportReason; details?: string }) {
+  return http.post<{ success: true }>('/api/reports', payload);
+}
+
 /**
  * Bloquer une utilisatrice — POST /api/users/block { targetUserId }
  */

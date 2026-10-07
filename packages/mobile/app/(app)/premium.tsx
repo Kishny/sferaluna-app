@@ -44,8 +44,9 @@ function formatDate(iso: string | null | undefined): string | null {
 }
 
 /**
- * Plans SferaLuna — valeurs et contenus strictement alignés sur
- * src/app/paiement/page.tsx et src/models/User.ts du backend.
+ * Plans SferaLuna — contenus alignés sur ce que le serveur accorde réellement à
+ * chaque formule (src/lib/subscription/config.ts côté site) et sur la page
+ * /tarifs. Ne rien promettre ici qui n'y figure pas.
  * Le plan `free` n'est pas proposé ici : cet écran sert à passer
  * d'un compte gratuit vers un abonnement payant.
  * Les prix ne sont pas écrits ici : sur iPhone, c'est Apple qui les fournit
@@ -68,26 +69,24 @@ const plans: PlanConfig[] = [
     name: 'Essentiel',
     description: 'Pour découvrir SferaLuna en douceur.',
     features: [
-      'Profil visible',
-      'Suggestions compatibles',
-      'Messages avec vos connexions',
-      'Accès au journal émotionnel',
-      'Sécurité standard',
+      'Invitations et messages illimités',
+      'Affinités de la semaine',
+      'VibePlanner : 3 idées de sortie par mois',
+      'Accès aux événements',
     ],
   },
   {
     id: 'premium-monthly',
     name: 'Premium',
-    badge: 'Le plus populaire',
+    badge: 'Recommandé',
     highlighted: true,
     description: 'Pour profiter pleinement de SferaLuna.',
     features: [
-      'Invitations illimitées',
-      'Messages prioritaires',
+      'Tout le contenu Essentiel',
+      'Mode Fantôme',
+      'Voir qui a visité votre profil',
+      'VibePlanner illimité',
       'Filtres avancés',
-      'Mode Fantôme (navigation invisible)',
-      'Vue des visiteurs de profil',
-      'Badge Premium',
     ],
   },
   {
@@ -96,12 +95,10 @@ const plans: PlanConfig[] = [
     badge: 'VIP',
     description: "L'expérience la plus complète de SferaLuna.",
     features: [
-      'Tout Premium inclus',
-      'Boost de visibilité',
-      'Profil mis en avant',
-      'Coaching personnalisé',
-      'Accès événements privés',
-      'Support VIP',
+      'Tout le contenu Premium',
+      'Coaching VibeMentor',
+      'Cercle privé VIP',
+      'Support prioritaire',
     ],
   },
 ];
